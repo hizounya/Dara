@@ -4,6 +4,7 @@
 // audience and closing CTA supplied by the team (28 Oct 2026). Lines marked [draft] await the team's review.
 import PageLayout from '../layouts/PageLayout.astro';
 import Mascot from '../components/brand/Mascot.astro';
+import DalaGreeter, { type DalaMessage } from '../components/brand/DalaGreeter.astro';
 import GradientText from '../components/brand/GradientText.astro';
 import Decor from '../components/brand/Decor.astro';
 import Button from '../components/content/Button.astro';
@@ -37,6 +38,14 @@ const hubPoints = [
   { icon: 'bullhorn', title: 'The Mading board', text: 'Events, certifications, scholarships and tips shared by the community.' },
 ] as const;
 
+// What Dala says when clicked in the hero, in turn. [draft] copy; each line points somewhere useful.
+const dalaSays: DalaMessage[] = [
+  { text: 'Hi, I’m Dala! Welcome to Dara in Tech.', link: { href: '#about', label: 'Meet the community' } },
+  { text: 'Curious about tech? You don’t need a tech background to belong here.', link: { href: '#programs', label: 'See what we do' } },
+  { text: 'Looking for your next role? Members share opportunities in the Talent Hub.', link: { href: '#talent-hub', label: 'Explore Talent Hub' } },
+  { text: 'Ready to meet your people? Come say hi in our community.', link: { href: site.joinUrl, label: 'Join our community' } },
+];
+
 const today = new Date().toISOString().slice(0, 10);
 const upcoming = events.filter((e) => e.date >= today).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 3);
 const fmtDate = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -62,7 +71,7 @@ const fmtDate = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('en-
       </div>
       <div class="hero__art">
         <Decor variant="skyline" width={360} class="hero__skyline" />
-        <Mascot pose="wave" width={440} eager alt="Dala, the Dara in Tech elephant, waving hello" class="hero__dala" />
+        <DalaGreeter messages={dalaSays} pose="wave" width={440} class="hero__dala" />
       </div>
     </div>
   </section>

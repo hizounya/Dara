@@ -1,21 +1,18 @@
 ---
 // Member Hub. The app (src/hub/hub.js) renders the header, tabs and views into #app;
 // this page supplies the shared document shell, theme, fonts, footer and the optimised brand images.
-import { getImage } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteFooter from '../../components/layout/SiteFooter.astro';
-import logoSrc from '../../assets/brand/dara-in-tech-logo.png';
-import dalaSrc from '../../assets/brand/mascot/dala-wave.png';
-import dalaEmptySrc from '../../assets/brand/mascot/dala-read.png';
+import { hubImages } from '../../hub/images';
 import '../../hub/hub.css';
 
-const logo = await getImage({ src: logoSrc, width: 240, format: 'webp' });
-const dala = await getImage({ src: dalaSrc, width: 480, format: 'webp' });
-const dalaEmpty = await getImage({ src: dalaEmptySrc, width: 240, format: 'webp' });
+const img = await hubImages();
 ---
 <BaseLayout title="Member Hub · Dara in Tech" description="Sign in to the Dara in Tech Member Hub: your profile, the Talent Pool, roles from the community, and the Mading board.">
   <a class="dit-skip" href="#main">Skip to content</a>
-  <div id="app" data-logo={logo.src} data-dala={dala.src} data-dala-empty={dalaEmpty.src}><p style="padding:40px 16px;text-align:center">Loading the Member Hub…</p></div>
+  <div id="app" data-logo={img.logo} data-dala={img.dala} data-dala-empty={img.poses.read} data-poses={JSON.stringify(img.poses)}>
+    <div class="hub-loading"><img src={img.poses.read} alt="" width="120" height="106" /><p>Loading the Member Hub…</p></div>
+  </div>
   <div id="modal-root"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <noscript><p style="padding:0 16px;text-align:center">The Member Hub needs JavaScript to run.</p></noscript>

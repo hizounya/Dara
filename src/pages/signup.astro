@@ -1,21 +1,18 @@
 ---
 // Sign up for the Member Hub: the same app as /hub/ in sign-up mode (data-mode="signup").
 // Once the email code is confirmed it hands over to /hub/, which continues with profile setup.
-import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SiteFooter from '../components/layout/SiteFooter.astro';
-import logoSrc from '../assets/brand/dara-in-tech-logo.png';
-import dalaSrc from '../assets/brand/mascot/dala-wave.png';
-import dalaEmptySrc from '../assets/brand/mascot/dala-read.png';
+import { hubImages } from '../hub/images';
 import '../hub/hub.css';
 
-const logo = await getImage({ src: logoSrc, width: 240, format: 'webp' });
-const dala = await getImage({ src: dalaSrc, width: 480, format: 'webp' });
-const dalaEmpty = await getImage({ src: dalaEmptySrc, width: 240, format: 'webp' });
+const img = await hubImages();
 ---
 <BaseLayout title="Sign up · Member Hub · Dara in Tech" description="Create your Dara in Tech Member Hub account: one profile, roles from the community with match scores, and the Mading board.">
   <a class="dit-skip" href="#main">Skip to content</a>
-  <div id="app" data-mode="signup" data-logo={logo.src} data-dala={dala.src} data-dala-empty={dalaEmpty.src}><p style="padding:40px 16px;text-align:center">Loading sign up…</p></div>
+  <div id="app" data-mode="signup" data-logo={img.logo} data-dala={img.dala} data-dala-empty={img.poses.read} data-poses={JSON.stringify(img.poses)}>
+    <div class="hub-loading"><img src={img.poses.read} alt="" width="120" height="106" /><p>Loading sign up…</p></div>
+  </div>
   <div id="modal-root"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <noscript><p style="padding:0 16px;text-align:center">The Member Hub needs JavaScript to run.</p></noscript>

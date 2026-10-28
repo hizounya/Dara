@@ -18,7 +18,9 @@ const APP=document.getElementById('app').dataset;
 const IMG={logo:APP.logo,dala:APP.dala,dalaEmpty:APP.dalaEmpty};
 /* The same app also runs on /signup (data-mode="signup"): sign-up copy, then hand over to /hub/ once signed in. */
 const SIGNUP=APP.mode==='signup';
-const dalaImg=()=>'<img src="'+IMG.dalaEmpty+'" alt="" width="240" height="211" loading="lazy">';
+/* Dala's official poses (optimised URLs). Dala reacts to what just happened, per the design system's pose rules. */
+const POSES=(()=>{try{return JSON.parse(APP.poses||'{}')}catch(e){return {}}})();
+const dalaImg=pose=>'<img src="'+(POSES[pose]||IMG.dalaEmpty)+'" alt="" width="240" height="211" loading="lazy" data-pose="'+(POSES[pose]?pose:'read')+'">';
 
 /* ================= constants ================= */
 const LEVELS=[{v:'intern',l:'Intern'},{v:'entry',l:'Entry level'},{v:'junior',l:'Junior'},{v:'mid',l:'Mid level'},{v:'senior',l:'Senior'}];
@@ -350,8 +352,13 @@ function sugForInterests(list){
   const out=[];cats.forEach(c=>(SUG_BY_CAT[c]||[]).forEach(s=>{if(!out.some(x=>nk(x)===nk(s)))out.push(s)}));
   return out;
 }
-function emptyHTML(title,text,btn){return '<div class="empty">'+dalaImg()+'<h3>'+esc(title)+'</h3><p>'+esc(text)+'</p>'+(btn||'')+'</div>'}
-function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>{t.classList.remove('show');toast._t=setTimeout(()=>{t.textContent=''},400)},2800)}
+function emptyHTML(title,text,btn,pose){return '<div class="empty">'+dalaImg(pose)+'<h3>'+esc(title)+'</h3><p>'+esc(text)+'</p>'+(btn||'')+'</div>'}
+function toast(msg,pose){
+  const t=$('#toast'),src=pose&&POSES[pose];
+  t.innerHTML=(src?'<img src="'+src+'" alt="" width="48" height="42" data-pose="'+pose+'">':'')+'<span>'+esc(msg)+'</span>';
+  t.classList.toggle('has-dala',!!src);t.classList.add('show');
+  clearTimeout(toast._t);toast._t=setTimeout(()=>{t.classList.remove('show');toast._t=setTimeout(()=>{t.innerHTML=''},400)},src?3400:2800);
+}
 function chipsFor(hit,miss,max){
   const all=hit.map(s=>({s,h:1})).concat(miss.map(s=>({s,h:0})));
   const shown=max?all.slice(0,max):all;
@@ -463,7 +470,7 @@ function filteredJobs(){
 }
 function rolesResultsHTML(){
   const rows=filteredJobs();
-  if(!rows.length)return emptyHTML('No roles match these filters','Lower the minimum match or clear a filter.','<button class="dit-btn dit-btn--outline dit-btn--sm" data-act="clear-filters">Clear filters</button>');
+  if(!rows.length)return emptyHTML('No roles match these filters','Lower the minimum match or clear a filter.','<button class="dit-btn dit-btn--outline dit-btn--sm" data-act="clear-filters">Clear filters</button>','comfort');
   return '<p class="count">'+rows.length+' role'+(rows.length===1?'':'s')+(S.f.sort==='match'?', best match first':', newest first')+'</p>'+rows.map(x=>jobCardHTML(x.j,x.r)).join('');
 }
 function rolesViewHTML(){
@@ -497,7 +504,7 @@ function personHTML(m,r,jobSkills){
 }
 function membersResultsHTML(){
   const rows=filteredMembers();
-  if(!rows.length)return emptyHTML('No members found','Try a different search, or invite more members to turn on the Talent Pool.');
+  if(!rows.length)return emptyHTML('No members found','Try a different search, or invite more members to turn on the Talent Pool.','','comfort');
   return '<p class="count">'+rows.length+' member'+(rows.length===1?'':'s')+' in the Talent Pool</p>'+rows.map(m=>personHTML(m,null,[])).join('');
 }
 function membersViewHTML(){
@@ -620,7 +627,7 @@ async function submitPost(form){
   const btn=$('button[type=submit]',form);btn.disabled=true;
   try{
     await API.savePost(p);await refreshData();closeModal();render();
-    toast(id?'Post updated':'Posted to Mading');
+    toast(id?'Post updated':'Posted to Mading',id?'thumbs-up':'cheer');
   }catch(e){btn.disabled=false;setErr(e.message)}
 }
 
@@ -651,7 +658,7 @@ function adminHTML(){
    '<div class="tbl-wrap" id="admin-table">'+adminTableHTML()+'</div>';
 }
 function viewHTML(){
-  if(!S.ready)return '<p style="padding:40px 16px;text-align:center">Loading Dara in Tech…</p>';
+  if(!S.ready)return '<div class="hub-loading">'+dalaImg('read')+'<p>Loading the Member Hub…</p></div>';
   if(!S.user)return authHTML();
   if(!S.me&&S.admin&&S.view==='admin')return shell(adminHTML(),false);
   if(!S.me)return shell(onboardHTML(),false);
@@ -691,7 +698,7 @@ function closeModal(){
 function candListHTML(j){
   const rows=candidatesFor(j).filter(x=>x.r.total>=S.candMin).slice(0,25);
   const sk=(j.req_skills||[]).concat(j.nice_skills||[]);
-  if(!rows.length)return emptyHTML('No members at this level','Lower the filter, or wait for more members to join the Talent Pool.');
+  if(!rows.length)return emptyHTML('No members at this level','Lower the filter, or wait for more members to join the Talent Pool.','','comfort');
   return '<ul class="cand-list">'+rows.map(x=>'<li>'+personHTML(x.m,x.r,sk)+'</li>').join('')+'</ul>';
 }
 function jobDetailHTML(j){
@@ -801,8 +808,8 @@ async function submitProfile(form){
     S.me=Object.assign({},row,saved||{});
     S.cvPending=null;S.cvRemove=false;S.cvShare=null;
     await refreshData();
-    if(onb){S.view='home';history.replaceState(null,'','#/home');render();toTop();toast('Welcome to Dara in Tech')}
-    else{render();toast('Profile saved')}
+    if(onb){S.view='home';history.replaceState(null,'','#/home');render();toTop();toast('Welcome to Dara in Tech','excited')}
+    else{render();{const full=completeness(S.me).pct===100;toast(full?'Profile saved. It’s 100% complete!':'Profile saved',full?'trophy':'thumbs-up')}}
   }catch(e){btn.disabled=false;setErr(e.message)}
 }
 async function submitJob(form){
@@ -820,7 +827,7 @@ async function submitJob(form){
   const btn=$('button[type=submit]',form);btn.disabled=true;
   try{
     await API.saveJob(p);await refreshData();closeModal();render();
-    toast(id?'Role updated':'Role posted');
+    toast(id?'Role updated':'Role posted',id?'thumbs-up':'announce');
   }catch(e){btn.disabled=false;setErr(e.message)}
 }
 function csvCell(v){
@@ -886,7 +893,7 @@ document.addEventListener('click',async e=>{
       case 'del-me':S.confirm='me';render();break;
       case 'del-me-yes':if(S.me&&S.me.cv_path)await API.removeCV(S.me).catch(()=>{});await API.deleteMe(S.user.id);S.me=null;S.confirm=null;await refreshData();render();toTop();toast('Profile deleted');break;
     }
-  }catch(err){toast(err&&err.message?err.message:'Something went wrong. Try again.')}
+  }catch(err){toast(err&&err.message?err.message:'Something went wrong. Try again.','comfort')}
 });
 document.addEventListener('submit',async e=>{
   const f=e.target.closest('[data-form]');if(!f)return;

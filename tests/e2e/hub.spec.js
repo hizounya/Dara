@@ -256,3 +256,40 @@ test.describe('accessibility (axe, WCAG 2 A/AA)', () => {
     });
   }
 });
+
+test.describe('Dala reacts in the Hub (Phase 5)', () => {
+  test('pose follows what just happened', async ({ page }) => {
+    test.skip(legacy, 'v1 has no reacting mascot');
+    const pose = () => page.locator('#toast img').getAttribute('data-pose');
+
+    await onboard(page);
+    expect(await pose()).toBe('excited');                     // welcome
+
+    await page.click('.tab[data-v="profile"]');
+    await page.click('form[data-form="profile"] button[type=submit]');
+    await expect(page.locator('#toast')).toContainText('Profile saved');
+    expect(await pose()).toBe('thumbs-up');                   // saved
+
+    // Complete every item of the profile checklist → trophy.
+    for (const s of ['Python']) { await page.fill('#pk-skills', s); await page.press('#pk-skills', 'Enter'); }
+    await page.click('button[data-tg="job_types"][data-v="full_time"]');
+    await page.click('button[data-tg="work_modes"][data-v="remote"]');
+    await page.fill('#f-bio', 'Building a data portfolio.');
+    await page.click('form[data-form="profile"] button[type=submit]');
+    await expect(page.locator('#toast')).toContainText('100% complete');
+    expect(await pose()).toBe('trophy');
+
+    await page.click('.tab[data-v="mading"]');
+    await page.locator('button[data-act="post-menu"]').first().click();
+    await page.click('button[data-act="post-kind"][data-v="tip"]');
+    await page.fill('#p-title', 'A tip');
+    await page.fill('#p-desc', 'Write down every decision you make.');
+    await page.click('form[data-form="post"] button[type=submit]');
+    await expect(page.locator('#toast')).toContainText('Posted to Mading');
+    expect(await pose()).toBe('cheer');                       // posted
+
+    await page.click('.tab[data-v="pool"]');
+    await page.fill('#f-q', 'no-such-role-anywhere');
+    await expect(page.locator('#results .empty img')).toHaveAttribute('data-pose', 'comfort'); // nothing found
+  });
+});

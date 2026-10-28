@@ -196,3 +196,37 @@ test.describe('sign up page', () => {
     await expect(page.locator('form[data-form="auth-email"]')).toHaveCount(0);
   });
 });
+
+test.describe('interactive Dala (hero)', () => {
+  test('is a button that cycles messages, closes with Escape and returns focus', async ({ page }) => {
+    await page.goto(siteUrl + '/');
+    const dala = page.getByRole('button', { name: /Say hi to Dala/ });
+    const bubble = page.locator('#dala-bubble');
+    await expect(bubble).toBeHidden();
+    await expect(page.locator('[data-dala-hint]')).toBeVisible();
+
+    await dala.click();
+    await expect(dala).toHaveAttribute('aria-expanded', 'true');
+    await expect(bubble).toContainText('Hi, I’m Dala!');
+    await expect(page.locator('[data-dala-hint]')).toHaveCount(0);
+    await dala.click();
+    await expect(bubble).toContainText('Curious about tech?');
+
+    await page.keyboard.press('Escape');
+    await expect(bubble).toBeHidden();
+    await expect(dala).toBeFocused();
+
+    await page.keyboard.press('Enter');
+    await expect(bubble).toContainText('Looking for your next role?');
+    await bubble.getByRole('link', { name: /Explore Talent Hub/ }).click();
+    await expect(page).toHaveURL(/#talent-hub$/);
+    await expect(bubble).toBeHidden();
+  });
+
+  test('no accessibility violations with the bubble open', async ({ page }) => {
+    await page.goto(siteUrl + '/');
+    await page.getByRole('button', { name: /Say hi to Dala/ }).click();
+    const { violations } = await new AxeBuilder({ page }).include('.hero').withTags(['wcag2a', 'wcag2aa']).analyze();
+    expect(violations.map((v) => v.id)).toEqual([]);
+  });
+});
