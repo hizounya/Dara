@@ -10,7 +10,8 @@ test.beforeEach(async ({}, info) => {
 
 test('homepage introduces the community, not the Talent Hub', async ({ page }) => {
   await page.goto(siteUrl + '/');
-  await expect(page.locator('h1')).toContainText('Dara in Tech');
+  await expect(page.locator('h1')).toHaveText('A new generation of women. A new era of tech.');
+  await expect(page.locator('.hero')).toContainText('Hi, we’re Dara in Tech');
   await expect(page.locator('form[data-form="auth-email"]')).toHaveCount(0);
   expect(new URL(page.url()).pathname).toBe('/');
 });
