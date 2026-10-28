@@ -1,9 +1,7 @@
 ---
 // Component reference for contributors (not linked, noindex). Everything here follows the theme toggle.
 // Copy comes from the official carousel; anything marked "Sample" is placeholder text for layout only.
-import BaseLayout from '../layouts/BaseLayout.astro';
-import ThemeToggle from '../components/layout/ThemeToggle.astro';
-import Logo from '../components/brand/Logo.astro';
+import PageLayout from '../layouts/PageLayout.astro';
 import Mascot, { type Pose } from '../components/brand/Mascot.astro';
 import GradientText from '../components/brand/GradientText.astro';
 import Decor from '../components/brand/Decor.astro';
@@ -30,16 +28,8 @@ const icons: IconName[] = ['bullhorn', 'screwdriver-wrench', 'comments', 'handsh
   'location-dot', 'laptop-code', 'lightbulb', 'graduation-cap', 'briefcase', 'star', 'rocket', 'book-open', 'arrow-right'];
 const poses: Pose[] = ['wave', 'read', 'announce', 'thumbs-up', 'cheer', 'excited', 'trophy', 'comfort'];
 ---
-<BaseLayout title="Styleguide · Dara in Tech" description="Component reference for the Dara in Tech website." noindex>
-  <header class="sg-top">
-    <div class="dit-container sg-top__in">
-      <a href="/" aria-label="Dara in Tech home"><Logo height={40} /></a>
-      <span class="dit-tag">Styleguide</span>
-      <ThemeToggle />
-    </div>
-  </header>
-
-  <main class="dit-container sg">
+<PageLayout title="Styleguide · Dara in Tech" description="Component reference for the Dara in Tech website." noindex>
+  <div class="dit-container sg">
     <section class="sg-intro">
       <h1>Design <GradientText>foundation</GradientText></h1>
       <p class="dit-lead">Tokens come straight from the Dara in Tech design system. Light is the default; switch to dark with the moon button. Everything below is live.</p>
@@ -172,13 +162,10 @@ const poses: Pose[] = ['wave', 'read', 'announce', 'thumbs-up', 'cheer', 'excite
         <p class="dit-muted">Decor sits at edges only.</p>
       </div>
     </section>
-  </main>
-</BaseLayout>
+  </div>
+</PageLayout>
 
 <style>
-  .sg-top { position: sticky; top: 0; z-index: 10; background: var(--page-bg); border-bottom: 1px solid var(--border-soft); }
-  .sg-top__in { display: flex; align-items: center; gap: var(--space-2); min-height: var(--header-h); }
-  .sg-top__in :global(.dit-theme-toggle) { margin-left: auto; }
   .sg { display: flex; flex-direction: column; gap: var(--space-7); padding-block: var(--space-6) var(--space-8); }
   .sg-intro { display: flex; flex-direction: column; gap: var(--space-2); }
   .sg-h { font-size: var(--fs-section); margin-bottom: var(--space-3); }

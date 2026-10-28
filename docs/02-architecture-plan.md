@@ -307,7 +307,17 @@ Each milestone ends with tests run and a **local commit on `feature/official-web
 
    It must be enforced by RLS and Storage policies, never by the UI alone. Access must not broaden to all authenticated members. CVs stay private by default. The existing consent label ("Let members who post roles download my CV") already describes this rule, so the wording stays and the policy is changed to match it. See section 11.
 5. **Existing pool members:** `in_pool` and `cv_shared` values are never changed by a migration: no automatic enrolment or removal. Any future change that **widens** visibility or sharing requires renewed consent before it applies to existing members.
-6. **About page copy:** the vision, mission, and four values supplied by the team are the approved starting point.
+6. **About copy:** superseded on 28 Oct 2026 by the fuller "About Dara in Tech" copy from the team, which is now on the homepage:
+   - About
+   - the meaning of Dara
+   - vision and mission
+   - What we do (Learn Together · Connect Meaningfully · Grow With Opportunities)
+   - What we believe (Belonging · Curiosity · Collaboration · Growth)
+   - Who is Dara for?
+   - Be part of Dara
+
+   The carousel's four formats (Sharing Sessions, Mini Workshop, Networking Nights, Project Collabs) appear as tags under What we do. Still marked **[draft]** in code: the Talent Hub blurb and the Partner with us line.
+9. **Homepage tells the story before asking:** the order is hero → About → meaning + vision/mission → What we do (+ events) → values → who it's for → Talent Hub → Partner → Be part of Dara (CTA). Header links point to these sections until the separate pages exist (Phase 6), so there are no dead links. Button labels stay in sentence case ("Join our community") per the DS voice rules.
 7. **Demo mode:**
    - off by default
    - enabled only by `PUBLIC_DEMO_MODE=true` at build time

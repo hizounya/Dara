@@ -84,3 +84,75 @@ test.describe('responsive', () => {
     });
   }
 });
+
+test.describe('homepage structure and navigation', () => {
+  test('introduces the community before any call to action section', async ({ page }) => {
+    await page.goto(siteUrl + '/');
+    const headings = await page.locator('main h2').allTextContents();
+    expect(headings[0]).toContain('Find your people');
+    expect(headings.indexOf('Be part of Dara')).toBe(headings.length - 1);
+  });
+
+  test('"Explore Talent Hub" explains the Hub on the page instead of jumping to a login', async ({ page }) => {
+    await page.goto(siteUrl + '/');
+    await page.getByRole('link', { name: 'Explore Talent Hub' }).click();
+    await expect(page).toHaveURL(/\/#talent-hub$/);
+    await expect(page.locator('#talent-hub h2')).toBeInViewport();
+    await expect(page.locator('#talent-hub').getByRole('link', { name: 'Open the Member Hub' })).toHaveAttribute('href', '/hub/');
+  });
+
+  test('every internal link leads somewhere that exists', async ({ page, request }) => {
+    for (const path of ['/', '/styleguide']) {
+      await page.goto(siteUrl + path);
+      const hrefs = await page.$$eval('a[href]', (as) => [...new Set(as.map((a) => a.getAttribute('href')))]);
+      for (const href of hrefs.filter((h) => h.startsWith('/') || h.startsWith('#'))) {
+        const url = new URL(href, siteUrl + path);
+        if (url.hash) {
+          await page.goto(url.origin + url.pathname);
+          expect(await page.locator(url.hash).count(), `${path} → ${href}`).toBe(1);
+        } else {
+          expect((await request.get(url.href)).status(), `${path} → ${href}`).toBe(200);
+        }
+      }
+    }
+  });
+
+  test('skip link moves focus to the main content', async ({ page }) => {
+    await page.goto(siteUrl + '/');
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/#main$/);
+  });
+});
+
+test.describe('mobile menu', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  test('opens, closes with Escape (focus returns), and closes after choosing a link', async ({ page }) => {
+    await page.goto(siteUrl + '/');
+    const button = page.getByRole('button', { name: 'Menu' });
+    const nav = page.getByRole('navigation', { name: 'Main' });
+    await expect(button).toHaveAttribute('aria-expanded', 'false');
+    await expect(nav).toBeHidden();
+
+    await button.click();
+    await expect(button).toHaveAttribute('aria-expanded', 'true');
+    await expect(nav.getByRole('link', { name: 'About' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(button).toHaveAttribute('aria-expanded', 'false');
+    await expect(button).toBeFocused();
+
+    await button.click();
+    await nav.getByRole('link', { name: 'Talent Hub' }).click();
+    await expect(button).toHaveAttribute('aria-expanded', 'false');
+    await expect(page).toHaveURL(/#talent-hub$/);
+  });
+
+  test('menu has no accessibility violations when open', async ({ page }) => {
+    await page.goto(siteUrl + '/');
+    await page.getByRole('button', { name: 'Menu' }).click();
+    const { violations } = await new AxeBuilder({ page }).include('header').withTags(['wcag2a', 'wcag2aa']).analyze();
+    expect(violations.map((v) => v.id)).toEqual([]);
+  });
+});

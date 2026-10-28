@@ -22,6 +22,10 @@ export default defineConfig({
   testDir: 'tests/e2e',
   reporter: [['list']],
   fullyParallel: true,
+  // Two workers and a 60s budget: launching the system Chrome counts towards the first test in each
+  // worker and can take well over 30s on a busy laptop.
+  workers: 2,
+  timeout: 60_000,
   use: {
     // System Chrome, so contributors don't need a Playwright browser download.
     channel: 'chrome',

@@ -1,5 +1,13 @@
 /* Component classes. This class API is the shared contract between Astro components and the Member Hub. */
 
+/* ---------- Sections (vertical rhythm: 64px mobile, 112px desktop) ---------- */
+.dit-section { position: relative; padding-block: var(--space-6); }
+@media (min-width: 960px) { .dit-section { padding-block: 96px; } }
+.dit-section--tint { background: var(--surface-soft); }
+.dit-section--tint-round { border-radius: var(--radius-frame); }
+.dit-section__head { display: flex; flex-direction: column; gap: var(--space-2); max-width: 720px; margin-bottom: var(--space-5); }
+.dit-section__head--center { margin-inline: auto; align-items: center; text-align: center; }
+
 /* ---------- Text ---------- */
 .dit-hero-title { font-size: var(--fs-hero); line-height: var(--lh-tight); font-weight: var(--weight-bold); }
 .dit-grad-text {

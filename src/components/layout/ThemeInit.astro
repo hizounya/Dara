@@ -7,6 +7,7 @@
 <script is:inline>
   (function () {
     var KEY = 'dit-theme', root = document.documentElement;
+    root.classList.add('js'); // lets CSS hide JS-only UI (e.g. the closed mobile menu) only when JS runs
     function stored() { try { return localStorage.getItem(KEY) === 'dark' ? 'dark' : 'light'; } catch (e) { return 'light'; } }
     function apply(theme) {
       root.setAttribute('data-theme', theme);
