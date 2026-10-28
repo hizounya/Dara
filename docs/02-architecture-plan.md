@@ -316,7 +316,7 @@ Each milestone ends with tests run and a **local commit on `feature/official-web
    - Who is Dara for?
    - Be part of Dara
 
-   The carousel's four formats (Sharing Sessions, Mini Workshop, Networking Nights, Project Collabs) appear as tags under What we do. Still marked **[draft]** in code: the Talent Hub blurb and the Partner with us line.
+   The meaning section uses the team's 28 Oct revision ("“Dara” is an Indonesian word for a young woman…"). The carousel's four formats (Sharing Sessions, Mini Workshop, Networking Nights, Project Collabs) appear as tags under What we do. Still marked **[draft]** in code: the Talent Hub blurb and the Partner with us line.
 9. **Homepage tells the story before asking:** the order is hero → About → meaning + vision/mission → What we do (+ events) → values → who it's for → Talent Hub → Partner → Be part of Dara (CTA). Header links point to these sections until the separate pages exist (Phase 6), so there are no dead links. Button labels stay in sentence case ("Join our community") per the DS voice rules.
 7. **Demo mode:**
    - off by default

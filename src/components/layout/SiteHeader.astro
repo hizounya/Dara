@@ -2,30 +2,31 @@
 // Shared site header: logo, main navigation, theme toggle, Member login and the main call to action.
 // Below 960px the links move into a disclosure menu (button with aria-expanded; Escape closes it).
 // Without JavaScript the menu simply stays open, so every link is still reachable.
+// Styles live in components.css (.dit-hdr) because the Member Hub renders the same header.
 import Logo from '../brand/Logo.astro';
 import Button from '../content/Button.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import { site } from '../../data/site';
 ---
-<header class="hdr">
-  <div class="dit-container hdr__bar">
-    <a class="hdr__logo" href="/" aria-label="Dara in Tech home"><Logo height={40} /></a>
+<header class="dit-hdr">
+  <div class="dit-container dit-hdr__bar">
+    <a class="dit-hdr__logo" href="/" aria-label="Dara in Tech home"><Logo height={40} /></a>
 
-    <div class="hdr__actions">
+    <div class="dit-hdr__actions">
       <ThemeToggle />
-      <button class="hdr__menu-btn" type="button" aria-expanded="false" aria-controls="site-menu" data-nav-toggle>
-        <svg class="dit-icon" viewBox="0 0 20 20" aria-hidden="true"><path class="hdr__burger" d="M3 6h14M3 10h14M3 14h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+      <button class="dit-hdr__menu-btn" type="button" aria-expanded="false" aria-controls="site-menu" data-nav-toggle>
+        <svg class="dit-icon" viewBox="0 0 20 20" aria-hidden="true"><path class="dit-hdr__burger" d="M3 6h14M3 10h14M3 14h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
         <span>Menu</span>
       </button>
     </div>
 
-    <nav class="hdr__menu" id="site-menu" aria-label="Main">
-      <ul class="hdr__links">
+    <nav class="dit-hdr__menu" id="site-menu" aria-label="Main">
+      <ul class="dit-hdr__links">
         {site.nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
       </ul>
-      <div class="hdr__ctas">
+      <div class="dit-hdr__ctas">
         <Button href={site.hubUrl} variant="ghost" size="sm">Member login</Button>
-        <Button href={site.joinUrl} size="sm">Join our community</Button>
+        <Button href={site.joinUrl} size="sm">Join our community<span class="dit-visually-hidden"> on {site.joinVia}</span></Button>
       </div>
     </nav>
   </div>
@@ -52,50 +53,3 @@ import { site } from '../../data/site';
     matchMedia('(min-width: 960px)').addEventListener('change', (e) => { if (e.matches) setOpen(false); });
   }
 </script>
-
-<style>
-  .hdr { position: sticky; top: 0; z-index: 50; background: var(--page-bg); border-bottom: 1px solid var(--border-soft); }
-  .hdr__bar { display: flex; align-items: center; gap: var(--space-2); min-height: var(--header-h); }
-  .hdr__logo { display: inline-flex; margin-right: auto; border-radius: 12px; }
-  .hdr__actions { display: flex; align-items: center; gap: var(--space-1); }
-
-  .hdr__menu-btn {
-    display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px;
-    border: 1.5px solid var(--border-soft); border-radius: var(--radius-pill);
-    background: var(--surface-card); color: var(--text-headline); font: var(--weight-bold) var(--fs-small) / 1 var(--font-display);
-  }
-  .hdr__menu-btn .dit-icon { width: 20px; height: 20px; }
-
-  .hdr__links { list-style: none; margin: 0; padding: 0; }
-  .hdr__links a {
-    display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: var(--radius-control);
-    color: var(--text-headline); font: var(--weight-medium) var(--fs-body) / 1.2 var(--font-body); text-decoration: none;
-  }
-  .hdr__links a:hover { color: var(--link-hover); background: var(--surface-soft); }
-
-  /* Mobile: full-width panel under the bar. */
-  @media (max-width: 959px) {
-    .hdr__menu {
-      position: absolute; inset: 100% 0 auto; padding: var(--space-2) var(--gutter) var(--space-3);
-      background: var(--page-bg); border-bottom: 1px solid var(--border-soft); box-shadow: var(--shadow-soft);
-      display: flex; flex-direction: column; gap: var(--space-2);
-      max-height: calc(100svh - var(--header-h)); overflow-y: auto;
-    }
-    :global(.js) .hdr__menu:not([data-open="true"]) { display: none; }
-    .hdr__links a { min-height: 52px; font-size: var(--fs-lead); }
-    .hdr__ctas { display: grid; gap: var(--space-1); }
-    .hdr__ctas :global(.dit-btn) { width: 100%; min-height: 48px; }
-    :global(body.dit-menu-open) { overflow: hidden; }
-  }
-
-  /* Desktop: links inline between the logo and the actions. */
-  @media (min-width: 960px) {
-    .hdr__bar { gap: var(--space-3); }
-    .hdr__logo { margin-right: 0; }
-    .hdr__menu { display: contents; }
-    .hdr__links { display: flex; gap: 2px; margin-inline: auto; }
-    .hdr__ctas { display: flex; align-items: center; gap: var(--space-1); order: 3; }
-    .hdr__actions { order: 2; }
-    .hdr__menu-btn { display: none; }
-  }
-</style>

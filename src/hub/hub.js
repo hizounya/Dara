@@ -1,3 +1,7 @@
+import svgUsers from '../assets/icons/users.svg?raw';
+import svgBriefcase from '../assets/icons/briefcase.svg?raw';
+import svgStar from '../assets/icons/star.svg?raw';
+
 (function(){
 'use strict';
 
@@ -10,8 +14,9 @@ const DEMO=import.meta.env.PUBLIC_DEMO_MODE==='true';
 const CONFIGURED=!!(CONFIG.SUPABASE_URL&&CONFIG.SUPABASE_ANON_KEY);
 
 /* Brand images (logo and Dala). URLs of the build-optimised files, passed in by src/pages/hub/index.astro. */
-const IMG={logo:document.getElementById('app').dataset.logo,dala:document.getElementById('app').dataset.dala};
-const dalaImg=(cls,alt)=>'<img class="'+cls+'" src="'+IMG.dala+'" alt="'+(alt||'')+'" width="640" height="548">';
+const APP=document.getElementById('app').dataset;
+const IMG={logo:APP.logo,dala:APP.dala,dalaEmpty:APP.dalaEmpty};
+const dalaImg=()=>'<img src="'+IMG.dalaEmpty+'" alt="" width="240" height="211" loading="lazy">';
 
 /* ================= constants ================= */
 const LEVELS=[{v:'intern',l:'Intern'},{v:'entry',l:'Entry level'},{v:'junior',l:'Junior'},{v:'mid',l:'Mid level'},{v:'senior',l:'Senior'}];
@@ -62,18 +67,28 @@ const store={
  set(k,v){mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 };
 
+const fa=svg=>svg.trim().replace('<svg ','<svg class="ic" aria-hidden="true" focusable="false" fill="currentColor" ');
 const ICON={
  check:'<svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
  x:'<svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
  plus:'<svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
  search:'<svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
  ext:'<svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3H3v10h10v-3M9 3h4v4M13 3L7.5 8.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
- moon:'<svg class="ic i-moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.6 10.3A6 6 0 0 1 5.7 2.4a6 6 0 1 0 7.9 7.9z" fill="currentColor"/></svg>',
- sun:'<svg class="ic i-sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="currentColor"/><path d="M8 .8v2.1M8 13.1v2.1M.8 8h2.1M13.1 8h2.1M2.9 2.9l1.5 1.5M11.6 11.6l1.5 1.5M2.9 13.1l1.5-1.5M11.6 4.4l1.5-1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'
+ moon:'<svg class="ic dit-icon i-moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.6 10.3A6 6 0 0 1 5.7 2.4a6 6 0 1 0 7.9 7.9z" fill="currentColor"/></svg>',
+ sun:'<svg class="ic dit-icon i-sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="currentColor"/><path d="M8 .8v2.1M8 13.1v2.1M.8 8h2.1M13.1 8h2.1M2.9 2.9l1.5 1.5M11.6 11.6l1.5 1.5M2.9 13.1l1.5-1.5M11.6 4.4l1.5-1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+ users:fa(svgUsers), briefcase:fa(svgBriefcase), star:fa(svgStar)
 };
+const orb=name=>'<span class="hub-orb" aria-hidden="true">'+ICON[name]+'</span>';
 /* Light/dark switch. Clicks are handled by the shared theme script (ThemeInit), not by this file. */
-const themeBtn=()=>'<button type="button" class="btn ghost sm theme-btn" data-theme-toggle aria-pressed="'+(window.ditTheme&&window.ditTheme.get()==='dark')+'" aria-label="Dark mode" title="Light / dark mode">'+ICON.moon+ICON.sun+'</button>';
-const CIRCUIT='<svg class="circuit" viewBox="0 0 240 150" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle class="c" cx="14" cy="38" r="5"/><path class="l" d="M19 38H70L90 20H240"/><circle class="c" cx="78" cy="112" r="5"/><path class="l" d="M78 107V76L100 56H240"/><path class="l" d="M130 130V98L146 86H240"/></svg>';
+const themeBtn=()=>'<button type="button" class="dit-theme-toggle" data-theme-toggle aria-pressed="'+(window.ditTheme&&window.ditTheme.get()==='dark')+'" aria-label="Dark mode" title="Light / dark mode">'+ICON.moon+ICON.sun+'</button>';
+
+/* Routes: each view has its own address (/hub/#/mading), so Back, bookmarks and new tabs work.
+   Only hashes starting with "#/" are routes, so Supabase sign-in tokens (#access_token=...) are left alone. */
+const VIEWS=['home','mading','pool','postings','profile','admin'];
+const SLUG={pool:'talent-pool'};
+const TITLES={home:'Home',mading:'Mading',pool:'Talent Pool',postings:'My postings',profile:'Profile',admin:'Admin'};
+const slugOf=v=>SLUG[v]||v;
+const viewFromHash=()=>{const m=location.hash.match(/^#\/([a-z-]+)$/);if(!m)return null;const v=Object.keys(SLUG).find(k=>SLUG[k]===m[1])||m[1];return VIEWS.includes(v)?v:null};
 
 /* ================= match engine ================= */
 function levelIdx(v){return LEVELS.findIndex(l=>l.v===v)}
@@ -305,8 +320,9 @@ const PK={},PKS={},TG={};
 function opts(list,sel,ph){
   return (ph!=null?'<option value="">'+esc(ph)+'</option>':'')+list.map(o=>{const v=o.v!==undefined?o.v:o,l=o.l!==undefined?o.l:o;return '<option value="'+esc(v)+'"'+(v===sel?' selected':'')+'>'+esc(l)+'</option>'}).join('');
 }
-function field(id,label,control,hint,cls){return '<div class="field'+(cls?' '+cls:'')+'"><label for="'+id+'">'+esc(label)+'</label>'+control+(hint?'<span class="hint">'+esc(hint)+'</span>':'')+'</div>'}
-function pickerHTML(name,values,sugg,ph){PK[name]=values.slice();PKS[name]=sugg;return '<div class="picker" data-picker="'+name+'"><div class="chips" data-chips></div><input class="input" id="pk-'+name+'" type="text" autocomplete="off" placeholder="'+esc(ph)+'" aria-label="'+esc(ph)+'"><div class="sugg" data-sugg></div></div>'}
+function field(id,label,control,hint,cls){return '<div class="dit-field'+(cls?' '+cls:'')+'"><label class="dit-label" for="'+id+'">'+esc(label)+'</label>'+control+(hint?'<span class="dit-hint">'+esc(hint)+'</span>':'')+'</div>'}
+function group(id,label,inner,hint){return '<div class="dit-field"><span class="dit-label" id="'+id+'">'+esc(label)+'</span>'+inner+(hint?'<span class="dit-hint">'+esc(hint)+'</span>':'')+'</div>'}
+function pickerHTML(name,values,sugg,ph){PK[name]=values.slice();PKS[name]=sugg;return '<div class="picker" data-picker="'+name+'"><div class="chips" data-chips></div><input class="dit-input" id="pk-'+name+'" type="text" autocomplete="off" placeholder="'+esc(ph)+'" aria-label="'+esc(ph)+'"><div class="sugg" data-sugg></div></div>'}
 function pickerRefresh(name){
   const root=$('[data-picker="'+name+'"]');if(!root)return;
   const vals=PK[name]||[];
@@ -323,80 +339,92 @@ function pickerAdd(name,v){
 }
 function flushPickers(){$$('[data-picker]').forEach(p=>{const n=p.dataset.picker,inp=$('input',p);if(inp&&inp.value.trim()){pickerAdd(n,inp.value);inp.value=''}})}
 function initPickers(){$$('[data-picker]').forEach(p=>pickerRefresh(p.dataset.picker))}
-function toggleHTML(name,options,values){
+function toggleHTML(name,options,values,labelId){
   TG[name]=values.slice();
-  return '<div class="tgl-group" role="group" data-tgg="'+name+'">'+options.map(o=>{const v=o.v!==undefined?o.v:o,l=o.l!==undefined?o.l:o;return '<button type="button" class="tgl" aria-pressed="'+values.includes(v)+'" data-act="tg" data-tg="'+name+'" data-v="'+esc(v)+'">'+esc(l)+'</button>'}).join('')+'</div>';
+  return '<div class="tgl-group" role="group"'+(labelId?' aria-labelledby="'+labelId+'"':'')+' data-tgg="'+name+'">'+options.map(o=>{const v=o.v!==undefined?o.v:o,l=o.l!==undefined?o.l:o;return '<button type="button" class="tgl" aria-pressed="'+values.includes(v)+'" data-act="tg" data-tg="'+name+'" data-v="'+esc(v)+'">'+esc(l)+'</button>'}).join('')+'</div>';
 }
 function sugForInterests(list){
   const cats=list&&list.length?list:CATEGORIES;
   const out=[];cats.forEach(c=>(SUG_BY_CAT[c]||[]).forEach(s=>{if(!out.some(x=>nk(x)===nk(s)))out.push(s)}));
   return out;
 }
-function emptyHTML(title,text,btn){return '<div class="empty">'+dalaImg('dala-sm')+'<h3>'+esc(title)+'</h3><p>'+esc(text)+'</p>'+(btn||'')+'</div>'}
-function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),2800)}
+function emptyHTML(title,text,btn){return '<div class="empty">'+dalaImg()+'<h3>'+esc(title)+'</h3><p>'+esc(text)+'</p>'+(btn||'')+'</div>'}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>{t.classList.remove('show');toast._t=setTimeout(()=>{t.textContent=''},400)},2800)}
 function chipsFor(hit,miss,max){
   const all=hit.map(s=>({s,h:1})).concat(miss.map(s=>({s,h:0})));
   const shown=max?all.slice(0,max):all;
-  return shown.map(x=>x.h?'<span class="chip hit">'+ICON.check+esc(x.s)+'</span>':'<span class="chip miss">'+esc(x.s)+'</span>').join('')+(max&&all.length>max?'<span class="chip more">+'+(all.length-max)+' more</span>':'');
+  return shown.map(x=>x.h?'<span class="chip hit">'+ICON.check+'<span class="dit-visually-hidden">You have </span>'+esc(x.s)+'</span>':'<span class="chip miss"><span class="dit-visually-hidden">Missing: </span>'+esc(x.s)+'</span>').join('')+(max&&all.length>max?'<span class="chip more">+'+(all.length-max)+' more</span>':'');
 }
-function scoreHTML(total,small){const b=band(total);return '<div class="mscore m-'+b+(small?' sm':'')+'" role="img" aria-label="'+total+' percent match, '+bandLabel(total)+'"><strong>'+total+'%</strong><span>match</span><div class="bar"><i style="width:'+total+'%"></i></div></div>'}
+function scoreHTML(total,small){const b=band(total);return '<div class="mscore m-'+b+(small?' sm':'')+'" role="img" aria-label="'+total+' percent match, '+bandLabel(total)+'"><strong>'+total+'%</strong><span>'+bandLabel(total)+'</span><div class="bar"><i style="width:'+total+'%"></i></div></div>'}
+const navLink=(v,label,cls)=>'<a class="'+cls+'" href="#/'+slugOf(v)+'" data-act="nav" data-v="'+v+'">'+label+'</a>';
 
 /* ================= views ================= */
+const TABS=[['home','Home'],['mading','Mading'],['pool','Talent Pool'],['postings','My postings'],['profile','Profile']];
+function hubBar(right){
+  return '<div class="dit-container dit-hdr__bar"><a class="dit-hdr__logo hub-logo" href="/" aria-label="Dara in Tech home"><img src="'+IMG.logo+'" alt="Dara in Tech" width="76" height="40"></a><span class="hub-badge">Member Hub</span>'+(DEMO?'<span class="hub-badge hub-badge--demo demo-chip">Demo</span>':'')+'<div class="dit-hdr__actions">'+right+'</div></div>';
+}
 function shell(inner,withTabs){
-  const tabs=withTabs?[['home','Home'],['mading','Mading'],['pool','Talent Pool'],['postings','My Postings'],['profile','Profile']].concat(S.admin?[['admin','Admin']]:[]):[];
-  return '<header class="top"><div class="top-in"><a class="brand" href="#" data-act="nav" data-v="home" aria-label="Dara in Tech home"><img class="logo-img" src="'+IMG.logo+'" alt="Dara in Tech"><span class="brand-tag">Talent Hub</span></a>'+(DEMO?'<span class="demo-chip">Demo</span>':'')+
-   '<div class="acct"><span class="who">'+esc(first(S.me&&S.me.full_name)||S.user.email)+'</span>'+themeBtn()+'<button class="btn ghost sm" data-act="signout">Sign out</button></div>'+
-   (withTabs?'<nav class="tabs" aria-label="Main">'+tabs.map(t=>'<button class="tab" data-act="nav" data-v="'+t[0]+'"'+(S.view===t[0]?' aria-current="page"':'')+'>'+t[1]+'</button>').join('')+'</nav>':'')+
-   '</div></header><main class="wrap" id="main">'+inner+'</main><footer class="foot"><div class="foot-in"><a href="https://www.instagram.com/daraintech.id/" target="_blank" rel="noopener noreferrer">@daraintech.id</a><span>Members you see here chose to share their profile with the community.</span></div></footer>';
+  const tabs=withTabs?TABS.concat(S.admin?[['admin','Admin']]:[]):[];
+  const name=(S.me&&S.me.full_name)||S.user.email;
+  return '<header class="dit-hdr hub-hdr">'+hubBar(themeBtn()+'<span class="hub-who"><span class="avatar avatar--sm" aria-hidden="true">'+esc(ini(name))+'</span><span class="who">'+esc(first(S.me&&S.me.full_name)||S.user.email)+'</span></span><button class="dit-btn dit-btn--ghost dit-btn--sm" data-act="signout">Sign out</button>')+
+   (withTabs?'<nav class="hub-tabs tabs" aria-label="Member Hub"><div class="dit-container hub-tabs__in">'+tabs.map(t=>'<a class="tab" href="#/'+slugOf(t[0])+'" data-act="nav" data-v="'+t[0]+'"'+(S.view===t[0]?' aria-current="page"':'')+'>'+t[1]+'</a>').join('')+'</div></nav>':'')+
+   '</header><main class="hub-main" id="main" tabindex="-1"><div class="dit-container hub-wrap">'+inner+'</div></main>';
 }
 function authHTML(){
   const email=S.authStep==='email';
   const form=email?
-   '<form class="login" data-form="auth-email" novalidate><h2>Sign in or join</h2><p class="muted">Enter your email. We send you a 6-digit code.</p>'+
-   field('a-email','Email','<input class="input" id="a-email" type="email" autocomplete="email" inputmode="email" placeholder="you@email.com" value="'+esc(S.authEmail)+'">')+
-   '<p class="err" role="alert">'+esc(S.authErr)+'</p><button class="btn" type="submit"'+(S.busy?' disabled':'')+'>'+(S.busy?'Sending…':'Send code')+'</button>'+
-   (CONFIG.GOOGLE_LOGIN&&!DEMO?'<div class="divider">or</div><button class="btn ghost" type="button" data-act="google">Continue with Google</button>':'')+'</form>':
-   '<form class="login" data-form="auth-code" novalidate><h2>Check your email</h2><p class="muted">We sent a code to <b class="sel">'+esc(S.authEmail)+'</b>. You can also tap the link in that email.</p>'+
-   field('a-code','6-digit code','<input class="input mono" id="a-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456">')+
-   '<p class="err" role="alert">'+esc(S.authErr)+'</p><div class="btn-row"><button class="btn" type="submit"'+(S.busy?' disabled':'')+'>'+(S.busy?'Checking…':'Sign in')+'</button><button class="btn ghost" type="button" data-act="back-email">Use another email</button></div></form>';
-  return '<div class="auth">'+CIRCUIT+'<section><div class="auth-brand" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><img class="logo-img" src="'+IMG.logo+'" alt="Dara in Tech">'+themeBtn()+'</div><p class="eyebrow">~/talent-hub</p><h1>Find your people, then your <span class="grad">next role</span>.</h1><p class="lede">A hub for women in Jakarta moving into tech. Keep one profile, see roles that members post, and know how well each one fits you before you apply.</p>'+
-   '<ol class="log"><li><code>join</code><b>One profile for the community</b><span>Your details are shared with other members only if you opt in.</span></li><li><code>post</code><b>Members post roles they are hiring for</b><span>Internships, full-time jobs and freelance work from people in the community.</span></li><li><code>match</code><b>A score for every role</b><span>Skills, field, level, work setup and job type, with the reasons shown.</span></li></ol></section>'+
-   '<div class="auth-side">'+dalaImg('dala','Dala, the Dara in Tech elephant')+'<section class="card">'+(DEMO?'<p class="demo-note">Demo mode: data stays in this browser. Use any email and the code <b class="mono">123456</b>. An email starting with <b>admin</b> opens the admin panel.</p><div style="height:14px"></div>':'')+form+'</section></div></div>';
+   '<form class="hub-login" data-form="auth-email" novalidate><h2>Sign in or join</h2><p class="dit-muted">Enter your email and we’ll send you a 6-digit code. No password needed.</p>'+
+   field('a-email','Email','<input class="dit-input" id="a-email" type="email" autocomplete="email" inputmode="email" placeholder="you@email.com" value="'+esc(S.authEmail)+'">')+
+   '<p class="err" role="alert">'+esc(S.authErr)+'</p><button class="dit-btn" type="submit"'+(S.busy?' disabled':'')+'>'+(S.busy?'Sending…':'Send code')+'</button>'+
+   (CONFIG.GOOGLE_LOGIN&&!DEMO?'<div class="divider">or</div><button class="dit-btn dit-btn--outline" type="button" data-act="google">Continue with Google</button>':'')+'</form>':
+   '<form class="hub-login" data-form="auth-code" novalidate><h2>Check your email</h2><p class="dit-muted">We sent a code to <b class="sel">'+esc(S.authEmail)+'</b>. You can also tap the link in that email.</p>'+
+   field('a-code','6-digit code','<input class="dit-input mono" id="a-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456">')+
+   '<p class="err" role="alert">'+esc(S.authErr)+'</p><div class="btn-row"><button class="dit-btn" type="submit"'+(S.busy?' disabled':'')+'>'+(S.busy?'Checking…':'Sign in')+'</button><button class="dit-btn dit-btn--ghost" type="button" data-act="back-email">Use another email</button></div></form>';
+  const steps=[['users','One profile for the community','Your details are shared with other members only if you opt in.'],['briefcase','Roles from the community','Internships, full-time jobs and freelance work that members are hiring for.'],['star','A match score for every role','Skills, field, level, work setup and job type, with the reasons shown.']];
+  return '<header class="dit-hdr hub-hdr">'+hubBar(themeBtn())+'</header>'+
+   '<main class="hub-main" id="main" tabindex="-1"><div class="dit-container hub-auth">'+
+   '<section class="hub-auth__intro"><p class="hub-eyebrow">Member Hub</p><h1>Find your people, then your <span class="dit-grad-text">next role</span>.</h1><p class="dit-lead">Keep one profile, see roles that members post, and know how well each one fits you before you apply.</p>'+
+   '<ul class="hub-steps" role="list">'+steps.map(s=>'<li>'+orb(s[0])+'<div><h2 class="hub-steps__title">'+s[1]+'</h2><p>'+s[2]+'</p></div></li>').join('')+'</ul></section>'+
+   '<section class="hub-auth__card" aria-label="Sign in"><img class="hub-auth__dala" src="'+IMG.dala+'" alt="" width="480" height="421"><div class="dit-card dit-card--float">'+
+   (DEMO?'<div class="dit-alert dit-alert--info demo-note" role="note">'+ICON.star+'<div><strong class="dit-alert__title">Demo mode</strong><span class="dit-alert__body">Data stays in this browser. Use any email and the code <b class="mono">123456</b>. An email starting with <b>admin</b> opens the admin panel.</span></div></div><div style="height:16px"></div>':'')+
+   form+'</div></section></div></main>';
 }
 function profileFormHTML(onb){
   const m=S.me||{};
   const email=m.email||(S.user&&S.user.email)||'';
   const sk=sugForInterests(m.interests||[]);
-  return '<form class="card form" data-form="profile" novalidate>'+
-   '<div class="grid2">'+
-   field('f-name','Full name','<input class="input" id="f-name" type="text" autocomplete="name" maxlength="120" value="'+esc(m.full_name||'')+'">')+
-   field('f-city','City','<input class="input" id="f-city" type="text" maxlength="80" placeholder="Jakarta" value="'+esc(m.city||'')+'">')+
-   field('f-status','Where are you now','<select class="input" id="f-status">'+opts(STATUSES,m.status,'Choose one')+'</select>')+
-   field('f-level','Level you are aiming for','<select class="input" id="f-level">'+opts(LEVELS,m.level,'Choose one')+'</select>')+
-   field('f-headline','Headline','<input class="input" id="f-headline" type="text" maxlength="120" placeholder="Accountant moving into data analysis" value="'+esc(m.headline||'')+'">','Your current role, or what you study.','span2')+
-   field('f-inst','School or company (optional)','<input class="input" id="f-inst" type="text" maxlength="120" value="'+esc(m.institution||'')+'">')+
-   field('f-email','Contact email','<input class="input" id="f-email" type="email" maxlength="160" value="'+esc(email)+'">')+
-   field('f-linkedin','LinkedIn (optional)','<input class="input" id="f-linkedin" type="text" maxlength="200" placeholder="linkedin.com/in/yourname" value="'+esc(m.linkedin||'')+'">','','span2')+
-   '</div>'+
-   '<div class="field"><span class="lbl">Fields you are interested in</span>'+toggleHTML('interests',CATEGORIES,m.interests||[])+'</div>'+
-   '<div class="field"><span class="lbl">Your skills</span>'+pickerHTML('skills',m.skills||[],sk,'Type a skill and press Enter')+'<span class="hint">Matches get sharper with 4 or more skills.</span></div>'+
-   '<div class="field"><span class="lbl">Kind of role you want</span>'+toggleHTML('job_types',JOB_TYPES,m.job_types||[])+'</div>'+
-   '<div class="field"><span class="lbl">Work setup you are fine with</span>'+toggleHTML('work_modes',MODES,m.work_modes||[])+'</div>'+
-   field('f-bio','Short bio (optional)','<textarea class="input" id="f-bio" maxlength="280" placeholder="What are you working towards?">'+esc(m.bio||'')+'</textarea>','Up to 280 characters.')+
-   '<div class="field"><span class="lbl">CV (optional)</span><div id="cv-box">'+cvBoxHTML()+'</div></div>'+
-   '<div class="pool-box"><label class="chk"><input type="checkbox" id="f-pool"'+(m.in_pool===false?'':' checked')+'><span><b>Show me in the Talent Pool</b><br><span class="hint">Other members can then see your name, headline, skills, level, city, contact email and LinkedIn, and roles they post will rank you by match. Turn this off any time and you disappear from the pool.</span></span></label></div>'+
-   (onb?'<label class="chk"><input type="checkbox" id="f-consent"><span>I agree that Dara in Tech stores this information to run the community hub.</span></label>':'')+
-   '<p class="err" id="form-err" role="alert"></p>'+
-   '<div class="btn-row"><button class="btn" type="submit">'+(onb?'Join the community':'Save profile')+'</button></div></form>';
+  const sec=(id,title,hint,body)=>'<section class="hub-fsec" aria-labelledby="'+id+'"><div class="hub-fsec__head"><h2 id="'+id+'">'+title+'</h2>'+(hint?'<p class="dit-hint">'+hint+'</p>':'')+'</div><div class="hub-fsec__body">'+body+'</div></section>';
+  return '<form class="dit-card dit-card--soft hub-form" data-form="profile" novalidate>'+
+   sec('fs-you','About you','Fields marked optional can stay empty.','<div class="grid2">'+
+     field('f-name','Full name','<input class="dit-input" id="f-name" type="text" autocomplete="name" maxlength="120" value="'+esc(m.full_name||'')+'">')+
+     field('f-city','City','<input class="dit-input" id="f-city" type="text" autocomplete="address-level2" maxlength="80" placeholder="Jakarta" value="'+esc(m.city||'')+'">')+
+     field('f-status','Where you are now','<select class="dit-input" id="f-status">'+opts(STATUSES,m.status,'Choose one')+'</select>')+
+     field('f-level','Level you are aiming for','<select class="dit-input" id="f-level">'+opts(LEVELS,m.level,'Choose one')+'</select>')+
+     field('f-headline','Headline','<input class="dit-input" id="f-headline" type="text" maxlength="120" placeholder="Accountant moving into data analysis" value="'+esc(m.headline||'')+'">','Your current role, or what you study.','span2')+
+     field('f-inst','School or company (optional)','<input class="dit-input" id="f-inst" type="text" autocomplete="organization" maxlength="120" value="'+esc(m.institution||'')+'">')+
+     field('f-email','Contact email','<input class="dit-input" id="f-email" type="email" autocomplete="email" maxlength="160" value="'+esc(email)+'">')+
+     field('f-linkedin','LinkedIn (optional)','<input class="dit-input" id="f-linkedin" type="text" autocomplete="url" maxlength="200" placeholder="linkedin.com/in/yourname" value="'+esc(m.linkedin||'')+'">','','span2')+
+     field('f-bio','Short bio (optional)','<textarea class="dit-input" id="f-bio" maxlength="280" placeholder="What are you working towards?">'+esc(m.bio||'')+'</textarea>','Up to 280 characters.','span2')+
+   '</div>')+
+   sec('fs-goals','What you’re looking for','Used for your match scores.',
+     group('g-int','Fields you are interested in',toggleHTML('interests',CATEGORIES,m.interests||[],'g-int'),'Pick at least one.')+
+     group('g-type','Kind of role you want',toggleHTML('job_types',JOB_TYPES,m.job_types||[],'g-type'))+
+     group('g-mode','Work setup you are fine with',toggleHTML('work_modes',MODES,m.work_modes||[],'g-mode')))+
+   sec('fs-skills','Your skills','Matches get sharper with 4 or more skills. Pick suggestions or type your own and press Enter.',pickerHTML('skills',m.skills||[],sk,'Type a skill and press Enter'))+
+   sec('fs-cv','CV (optional)','PDF or DOCX, up to 2 MB. Private unless you choose to share it.','<div id="cv-box">'+cvBoxHTML()+'</div>')+
+   sec('fs-privacy','Privacy','You can change these at any time.',
+     '<label class="dit-check hub-pool"><input type="checkbox" id="f-pool"'+(m.in_pool===true?' checked':'')+'><span><b>Show me in the Talent Pool</b><span class="dit-hint">Off unless you turn it on. When on, other signed-in members can see your name, headline, status, level, city, skills, bio, contact email and LinkedIn, and roles they post will rank you by match.</span></span></label>'+
+     (onb?'<label class="dit-check"><input type="checkbox" id="f-consent"><span>I agree that Dara in Tech stores this information to run the Member Hub.</span></label>':''))+
+   '<div class="hub-form__foot"><p class="err" id="form-err" role="alert"></p><button class="dit-btn dit-btn--lg" type="submit">'+(onb?'Create my profile':'Save profile')+'</button></div></form>';
 }
-function onboardHTML(){return '<section class="hero-row"><div><p class="eyebrow">welcome</p><h1>Tell us about <span class="grad">you</span>.</h1><p class="lede">This takes about three minutes. It is what the match score is built from, so the more accurate, the better.</p>'+(S.admin?'<div style="height:12px"></div><button class="btn ghost sm" data-act="nav" data-v="admin">Open the admin panel first</button>':'')+'</div>'+dalaImg('dala-hero')+'</section>'+profileFormHTML(true)}
+function onboardHTML(){return '<div class="hub-head"><div><h1>Tell us about <span class="dit-grad-text">you</span>.</h1><p class="dit-lead">It takes about three minutes. Your match scores are built from this, so the more accurate, the better.</p></div>'+(S.admin?'<button class="dit-btn dit-btn--outline dit-btn--sm" data-act="nav" data-v="admin">Open the admin panel first</button>':'')+'</div>'+profileFormHTML(true)}
 function rankedForMe(){
   return S.jobs.filter(j=>isOpen(j)&&j.posted_by!==S.user.id).map(j=>({j,r:matchScore(S.me,j)})).sort((a,b)=>b.r.total-a.r.total);
 }
 function jobCardHTML(j,r){
   const mine=S.user&&j.posted_by===S.user.id;
   const open=isOpen(j);
-  return '<article class="job" data-act="open-job" data-id="'+esc(j.id)+'"><div class="job-main"><div class="job-top"><button class="job-title" data-act="open-job" data-id="'+esc(j.id)+'">'+esc(j.title)+'</button>'+(mine?'<span class="badge you">Your post</span>':'')+(open?'':'<span class="badge warn">Closed</span>')+'</div>'+
+  return '<article class="job" data-act="open-job" data-id="'+esc(j.id)+'"><div class="job-main"><div class="job-top"><h3><button class="job-title" data-act="open-job" data-id="'+esc(j.id)+'">'+esc(j.title)+'</button></h3>'+(mine?'<span class="badge you">Your post</span>':'')+(open?'':'<span class="badge warn">Closed</span>')+'</div>'+
    '<p class="co">'+esc(j.company)+(j.location?' · '+esc(j.location):'')+'</p>'+
    '<div class="tags"><span class="tag">'+esc(j.category)+'</span><span class="tag">'+esc(lbl(JOB_TYPES,j.job_type))+'</span><span class="tag">'+esc(lbl(MODES,j.work_mode))+'</span><span class="tag">'+esc(lbl(LEVELS,j.level))+'</span></div>'+
    '<div class="chips">'+chipsFor(r.reqHit,r.reqMiss,6)+'</div></div>'+scoreHTML(r.total)+'</article>';
@@ -406,11 +434,12 @@ function homeHTML(){
   const c=completeness(S.me);
   const pool=S.members.filter(m=>m.in_pool).length;
   const openN=S.jobs.filter(isOpen).length;
-  return '<section class="hero-row"><div><p class="eyebrow">~/home</p><h1>Hi, <span class="grad">'+esc(first(S.me.full_name))+'</span>.</h1><p class="lede">'+(top.length?'Your best match right now is <b>'+esc(top[0].j.title)+'</b> at '+esc(top[0].j.company)+', scored '+top[0].r.total+'%.':'No open roles yet. Post one, or check back soon.')+'</p></div>'+dalaImg('dala-hero')+'</section>'+
-   '<div class="strip"><span><b>'+pool+'</b> members in the pool</span><span><b>'+openN+'</b> open roles</span><span>Profile <b>'+c.pct+'%</b> complete</span></div>'+
-   (c.pct<100?'<div class="card"><h3>Sharpen your matches</h3><ul class="tip-list">'+c.tips.slice(0,3).map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul><div style="height:12px"></div><button class="btn ghost sm" data-act="nav" data-v="profile">Edit profile</button></div>':'')+
-   '<section class="list"><div class="sec-h"><h2>Your top matches</h2><button class="btn ghost sm" data-act="nav" data-v="pool">See all roles</button></div>'+
-   (top.length?top.map(x=>jobCardHTML(x.j,x.r)).join(''):emptyHTML('Nothing to match yet','When members post roles, the best fits for you show up here.','<button class="btn" data-act="post-job">'+ICON.plus+' Post a role</button>'))+'</section>'+latestHTML();
+  return '<div class="hub-head"><div><h1>Hi, <span class="dit-grad-text">'+esc(first(S.me.full_name))+'</span>.</h1><p class="dit-lead">'+(top.length?'Your best match right now is <b>'+esc(top[0].j.title)+'</b> at '+esc(top[0].j.company)+': '+top[0].r.total+'% match.':'No open roles yet. Post one, or check back soon.')+'</p></div></div>'+
+   '<ul class="hub-stats" role="list"><li class="dit-card dit-card--soft"><span class="hub-stats__num">'+pool+'</span><span>members in the Talent Pool</span></li><li class="dit-card dit-card--soft"><span class="hub-stats__num">'+openN+'</span><span>open roles</span></li>'+
+   '<li class="dit-card dit-card--soft"><span class="hub-stats__num">'+c.pct+'%</span><span>profile complete</span><div class="progress" role="progressbar" aria-label="Profile completeness" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+c.pct+'"><i style="width:'+c.pct+'%"></i></div></li></ul>'+
+   (c.pct<100?'<div class="dit-card dit-card--soft hub-tips"><div><h2 class="hub-h2">Sharpen your matches</h2><ul class="tip-list">'+c.tips.slice(0,3).map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul></div>'+navLink('profile','Edit profile','dit-btn dit-btn--outline dit-btn--sm')+'</div>':'')+
+   '<section class="list" aria-labelledby="h-top"><div class="sec-h"><h2 id="h-top" class="hub-h2">Your top matches</h2>'+navLink('pool','See all roles','dit-btn dit-btn--ghost dit-btn--sm')+'</div>'+
+   (top.length?top.map(x=>jobCardHTML(x.j,x.r)).join(''):emptyHTML('Nothing to match yet','When members post roles, the best fits for you show up here.','<button class="dit-btn" data-act="post-job">'+ICON.plus+' Post a role</button>'))+'</section>'+latestHTML();
 }
 function filteredJobs(){
   const f=S.f,q=f.q.toLowerCase().trim();
@@ -427,18 +456,18 @@ function filteredJobs(){
 }
 function rolesResultsHTML(){
   const rows=filteredJobs();
-  if(!rows.length)return emptyHTML('No roles match these filters','Lower the minimum match or clear a filter.','<button class="btn ghost sm" data-act="clear-filters">Clear filters</button>');
+  if(!rows.length)return emptyHTML('No roles match these filters','Lower the minimum match or clear a filter.','<button class="dit-btn dit-btn--outline dit-btn--sm" data-act="clear-filters">Clear filters</button>');
   return '<p class="count">'+rows.length+' role'+(rows.length===1?'':'s')+(S.f.sort==='match'?', best match first':', newest first')+'</p>'+rows.map(x=>jobCardHTML(x.j,x.r)).join('');
 }
 function rolesViewHTML(){
   const f=S.f;
-  return '<div class="filters card"><div class="search">'+ICON.search+'<input class="input" id="f-q" data-f="q" type="search" placeholder="Search title, company or skill" aria-label="Search roles" value="'+esc(f.q)+'"></div>'+
-   '<div class="field"><label for="f-cat">Field</label><select class="input" id="f-cat" data-f="cat">'+opts(CATEGORIES,f.cat,'All fields')+'</select></div>'+
-   '<div class="field"><label for="f-mode">Setup</label><select class="input" id="f-mode" data-f="mode">'+opts(MODES,f.mode,'Any')+'</select></div>'+
-   '<div class="field"><label for="f-type">Job type</label><select class="input" id="f-type" data-f="type">'+opts(JOB_TYPES,f.type,'Any')+'</select></div>'+
-   '<div class="field"><label for="f-sort">Sort by</label><select class="input" id="f-sort" data-f="sort">'+opts([{v:'match',l:'Best match'},{v:'new',l:'Newest'}],f.sort)+'</select></div>'+
-   '<label class="range" style="grid-column:span 2">Minimum match: <span id="minv" class="mono">'+f.min+'%</span><input type="range" min="0" max="100" step="5" value="'+f.min+'" data-f="min"></label>'+
-   '<label class="chk" style="grid-column:span 2"><input type="checkbox" data-f="open"'+(f.open?' checked':'')+'><span>Open roles only</span></label></div>'+
+  return '<div class="filters dit-card dit-card--soft" role="search" aria-label="Filter roles"><div class="search">'+ICON.search+'<input class="dit-input" id="f-q" data-f="q" type="search" placeholder="Search title, company or skill" aria-label="Search roles" value="'+esc(f.q)+'"></div>'+
+   field('f-cat','Field','<select class="dit-input" id="f-cat" data-f="cat">'+opts(CATEGORIES,f.cat,'All fields')+'</select>')+
+   field('f-mode','Setup','<select class="dit-input" id="f-mode" data-f="mode">'+opts(MODES,f.mode,'Any')+'</select>')+
+   field('f-type','Job type','<select class="dit-input" id="f-type" data-f="type">'+opts(JOB_TYPES,f.type,'Any')+'</select>')+
+   field('f-sort','Sort by','<select class="dit-input" id="f-sort" data-f="sort">'+opts([{v:'match',l:'Best match'},{v:'new',l:'Newest'}],f.sort)+'</select>')+
+   '<label class="range wide">Minimum match: <span id="minv" class="mono">'+f.min+'%</span><input type="range" min="0" max="100" step="5" value="'+f.min+'" data-f="min" aria-label="Minimum match percentage"></label>'+
+   '<label class="dit-check wide"><input type="checkbox" data-f="open"'+(f.open?' checked':'')+'><span>Open roles only</span></label></div>'+
    '<div class="list" id="results" aria-live="polite">'+rolesResultsHTML()+'</div>';
 }
 function filteredMembers(){
@@ -457,23 +486,23 @@ function personHTML(m,r,jobSkills){
   return '<div class="person"><div class="avatar" aria-hidden="true">'+esc(ini(m.full_name))+'</div><div class="person-main"><b>'+esc(m.full_name)+'</b><span class="co">'+esc(m.headline||'')+'</span><div class="tags"><span class="tag">'+esc(lbl(LEVELS,m.level))+'</span>'+(m.city?'<span class="tag">'+esc(m.city)+'</span>':'')+'<span class="tag">'+esc(lbl(STATUSES,m.status))+'</span></div>'+
    '<div class="chips">'+sk.slice(0,8).map(s=>'<span class="chip'+(hit.has(nk(s))?' hit':'')+'">'+(hit.has(nk(s))?ICON.check:'')+esc(s)+'</span>').join('')+(sk.length>8?'<span class="chip more">+'+(sk.length-8)+' more</span>':'')+'</div>'+
    (m.bio?'<p class="note">'+esc(m.bio)+'</p>':'')+
-   '<div class="contact"><span class="sel">'+esc(m.email||'')+'</span>'+(li?'<a href="'+esc(li)+'" target="_blank" rel="noopener noreferrer">LinkedIn</a>':'')+(m.cv_path&&(m.cv_shared||S.admin||m.id===S.user.id)?'<button type="button" class="btn ghost sm" data-act="dl-cv" data-id="'+esc(m.id)+'">Download CV</button>':'')+'</div></div>'+(r?scoreHTML(r.total,true):'')+'</div>';
+   '<div class="contact"><span class="sel">'+esc(m.email||'')+'</span>'+(li?'<a href="'+esc(li)+'" target="_blank" rel="noopener noreferrer">LinkedIn<span class="dit-visually-hidden"> (opens in a new tab)</span></a>':'')+(m.cv_path&&(m.cv_shared||S.admin||m.id===S.user.id)?'<button type="button" class="dit-btn dit-btn--outline dit-btn--sm" data-act="dl-cv" data-id="'+esc(m.id)+'">Download CV</button>':'')+'</div></div>'+(r?scoreHTML(r.total,true):'')+'</div>';
 }
 function membersResultsHTML(){
   const rows=filteredMembers();
   if(!rows.length)return emptyHTML('No members found','Try a different search, or invite more members to turn on the Talent Pool.');
-  return '<p class="count">'+rows.length+' member'+(rows.length===1?'':'s')+' in the pool</p>'+rows.map(m=>personHTML(m,null,[])).join('');
+  return '<p class="count">'+rows.length+' member'+(rows.length===1?'':'s')+' in the Talent Pool</p>'+rows.map(m=>personHTML(m,null,[])).join('');
 }
 function membersViewHTML(){
   const f=S.mf;
-  return '<div class="filters card"><div class="search">'+ICON.search+'<input class="input" data-mf="q" type="search" placeholder="Search name, headline or skill" aria-label="Search members" value="'+esc(f.q)+'"></div>'+
-   '<div class="field" style="grid-column:span 2"><label for="m-level">Level</label><select class="input" id="m-level" data-mf="level">'+opts(LEVELS,f.level,'Any level')+'</select></div>'+
-   '<div class="field" style="grid-column:span 2"><label for="m-city">City</label><input class="input" id="m-city" data-mf="city" type="text" placeholder="Jakarta" value="'+esc(f.city)+'"></div></div>'+
+  return '<div class="filters dit-card dit-card--soft" role="search" aria-label="Filter members"><div class="search">'+ICON.search+'<input class="dit-input" data-mf="q" type="search" placeholder="Search name, headline or skill" aria-label="Search members" value="'+esc(f.q)+'"></div>'+
+   field('m-level','Level','<select class="dit-input" id="m-level" data-mf="level">'+opts(LEVELS,f.level,'Any level')+'</select>','','wide')+
+   field('m-city','City','<input class="dit-input" id="m-city" data-mf="city" type="text" placeholder="Jakarta" value="'+esc(f.city)+'">','','wide')+'</div>'+
    '<div class="list" id="members-results" aria-live="polite">'+membersResultsHTML()+'</div>';
 }
 function poolHTML(){
-  return '<div class="sec-h"><div><p class="eyebrow">talent pool</p><h1>Roles and members</h1></div><button class="btn" data-act="post-job">'+ICON.plus+' Post a role</button></div>'+
-   '<div class="seg" role="tablist" aria-label="Talent pool sections"><button class="seg-b" role="tab" aria-selected="'+(S.tab==='roles')+'" data-act="tab" data-v="roles">Roles for me</button><button class="seg-b" role="tab" aria-selected="'+(S.tab==='members')+'" data-act="tab" data-v="members">Members</button></div>'+
+  return '<div class="hub-head"><div><h1>Talent Pool</h1><p class="dit-lead">Roles posted by members, ranked by how well they fit you, and the members who chose to be listed.</p></div><button class="dit-btn" data-act="post-job">'+ICON.plus+' Post a role</button></div>'+
+   '<div class="seg" role="tablist" aria-label="Talent Pool sections"><button class="seg-b" role="tab" aria-selected="'+(S.tab==='roles')+'" data-act="tab" data-v="roles">Roles for me</button><button class="seg-b" role="tab" aria-selected="'+(S.tab==='members')+'" data-act="tab" data-v="members">Members</button></div>'+
    (S.tab==='roles'?rolesViewHTML():membersViewHTML());
 }
 function candidatesFor(j){
@@ -481,12 +510,12 @@ function candidatesFor(j){
 }
 function postingsHTML(){
   const mine=S.jobs.filter(j=>j.posted_by===S.user.id);
-  return '<div class="sec-h"><div><p class="eyebrow">my postings</p><h1>Roles you posted</h1></div><button class="btn" data-act="post-job">'+ICON.plus+' Post a role</button></div>'+
+  return '<div class="hub-head"><div><h1>My postings</h1><p class="dit-lead">Roles you posted, with the members who fit them best.</p></div><button class="dit-btn" data-act="post-job">'+ICON.plus+' Post a role</button></div>'+
    (mine.length?'<div class="list">'+mine.map(j=>{
      const c=candidatesFor(j);const strong=c.filter(x=>x.r.total>=70).length;
-     return '<article class="job" data-act="open-job" data-id="'+esc(j.id)+'"><div class="job-main"><div class="job-top"><button class="job-title" data-act="open-job" data-id="'+esc(j.id)+'">'+esc(j.title)+'</button>'+(isOpen(j)?'<span class="badge you">Open</span>':'<span class="badge warn">Closed</span>')+'</div><p class="co">'+esc(j.company)+' · posted '+esc(fmtD(j.created_at))+(j.deadline?' · closes '+esc(fmtD(j.deadline)):'')+'</p>'+
-      '<p class="count"><b class="mono">'+strong+'</b> member'+(strong===1?'':'s')+' at 70% or more'+(c.length?', best match <b class="mono">'+c[0].r.total+'%</b>':'')+' · '+c.length+' in the pool</p></div><div class="btn-row"><span class="btn ghost sm">View candidates</span></div></article>';
-   }).join('')+'</div>':emptyHTML('You have not posted a role yet','Post an opening and see which members fit it, ranked by match.','<button class="btn" data-act="post-job">'+ICON.plus+' Post a role</button>'))+myPostsHTML();
+     return '<article class="job" data-act="open-job" data-id="'+esc(j.id)+'"><div class="job-main"><div class="job-top"><h3><button class="job-title" data-act="open-job" data-id="'+esc(j.id)+'">'+esc(j.title)+'</button></h3>'+(isOpen(j)?'<span class="badge you">Open</span>':'<span class="badge warn">Closed</span>')+'</div><p class="co">'+esc(j.company)+' · posted '+esc(fmtD(j.created_at))+(j.deadline?' · closes '+esc(fmtD(j.deadline)):'')+'</p>'+
+      '<p class="count"><b class="mono">'+strong+'</b> member'+(strong===1?'':'s')+' at 70% or more'+(c.length?', best match <b class="mono">'+c[0].r.total+'%</b>':'')+' · '+c.length+' in the Talent Pool</p></div><div class="btn-row"><span class="dit-btn dit-btn--outline dit-btn--sm">View candidates</span></div></article>';
+   }).join('')+'</div>':emptyHTML('You have not posted a role yet','Post an opening and see which members fit it, ranked by match.','<button class="dit-btn" data-act="post-job">'+ICON.plus+' Post a role</button>'))+myPostsHTML();
 }
 /* ================= CV box ================= */
 function cvShareVal(){return S.cvShare!==null?S.cvShare:!!(S.me&&S.me.cv_shared)}
@@ -494,12 +523,12 @@ function cvBoxHTML(){
   const cur=S.me&&S.me.cv_path&&!S.cvRemove?S.me:null;
   const p=S.cvPending;
   let row='';
-  if(p)row='<div class="cv-row"><span class="cv-name">'+esc(p.name)+' <span class="muted">('+fmtSize(p.size)+', uploads when you save)</span></span><button type="button" class="btn ghost sm" data-act="cv-clear">Remove</button></div>';
-  else if(cur)row='<div class="cv-row"><span class="cv-name">'+esc(cur.cv_name||'CV')+' <span class="muted">('+fmtSize(cur.cv_size||0)+')</span></span><span class="btn-row"><button type="button" class="btn ghost sm" data-act="dl-cv" data-id="'+esc(cur.id)+'">Download</button><button type="button" class="btn ghost sm" data-act="cv-remove">Remove</button></span></div>';
-  else if(S.cvRemove&&S.me&&S.me.cv_path)row='<p class="hint">Your CV will be removed when you save.</p>';
+  if(p)row='<div class="cv-row"><span class="cv-name">'+esc(p.name)+' <span class="dit-muted">('+fmtSize(p.size)+', uploads when you save)</span></span><button type="button" class="dit-btn dit-btn--ghost dit-btn--sm" data-act="cv-clear">Remove</button></div>';
+  else if(cur)row='<div class="cv-row"><span class="cv-name">'+esc(cur.cv_name||'CV')+' <span class="dit-muted">('+fmtSize(cur.cv_size||0)+')</span></span><span class="btn-row"><button type="button" class="dit-btn dit-btn--outline dit-btn--sm" data-act="dl-cv" data-id="'+esc(cur.id)+'">Download</button><button type="button" class="dit-btn dit-btn--ghost dit-btn--sm" data-act="cv-remove">Remove</button></span></div>';
+  else if(S.cvRemove&&S.me&&S.me.cv_path)row='<p class="dit-hint">Your CV will be removed when you save.</p>';
   const has=!!(p||cur);
-  return row+'<input class="input" id="f-cv" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" aria-label="Choose a CV file"><span class="hint">PDF or DOCX, up to 2 MB.</span>'+
-   '<label class="chk"><input type="checkbox" id="f-cvshare"'+(has&&cvShareVal()?' checked':'')+(has?'':' disabled')+'><span>Let members who post roles download my CV <span class="hint">(only while you are in the Talent Pool. Admins can always see it.)</span></span></label>';
+  return row+'<input class="dit-input" id="f-cv" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" aria-label="Choose a CV file (PDF or DOCX, up to 2 MB)">'+
+   '<label class="dit-check"><input type="checkbox" id="f-cvshare"'+(has&&cvShareVal()?' checked':'')+(has?'':' disabled')+'><span>Let members who post roles download my CV<span class="dit-hint">Only while you are in the Talent Pool. Admins can always open it.'+(has?'':' Add a CV first.')+'</span></span></label>';
 }
 
 /* ================= Mading (community board) ================= */
@@ -508,7 +537,7 @@ function postCardHTML(p){
   const k=kindOf(p.kind);
   const mine=S.user&&p.posted_by===S.user.id;
   return '<article class="post" data-act="open-post" data-id="'+esc(p.id)+'"><div class="job-main"><div class="job-top"><span class="badge kind">'+esc(k.one)+'</span>'+(p.pinned?'<span class="badge you">Pinned</span>':'')+(mine?'<span class="badge you">Your post</span>':'')+(p.event_date&&isPast(p.event_date)?'<span class="badge warn">Past</span>':'')+'</div>'+
-   '<button class="job-title" data-act="open-post" data-id="'+esc(p.id)+'">'+esc(p.title)+'</button>'+(p.organizer?'<p class="co">'+esc(p.organizer)+'</p>':'')+
+   '<h3><button class="job-title" data-act="open-post" data-id="'+esc(p.id)+'">'+esc(p.title)+'</button></h3>'+(p.organizer?'<p class="co">'+esc(p.organizer)+'</p>':'')+
    '<p class="post-desc">'+esc(p.description)+'</p>'+
    '<div class="tags">'+(p.event_date?'<span class="tag">'+esc(k.dl||'Date')+': '+esc(fmtD(p.event_date))+'</span>':'')+(p.location?'<span class="tag">'+esc(p.location)+'</span>':'')+'<span class="tag">Posted '+esc(fmtD(p.created_at))+'</span></div></div></article>';
 }
@@ -520,23 +549,23 @@ function feedItems(){
 }
 function feedHTML(){
   const items=feedItems();
-  if(!items.length)return emptyHTML('Nothing here yet','Be the first to post in this section.','<button class="btn" data-act="post-menu">'+ICON.plus+' Post to Mading</button>');
+  if(!items.length)return emptyHTML('Nothing here yet','Be the first to post in this section.','<button class="dit-btn" data-act="post-menu">'+ICON.plus+' Post to Mading</button>');
   return '<p class="count">'+items.length+' post'+(items.length===1?'':'s')+', pinned first, then newest</p>'+items.map(x=>x.t==='job'?jobCardHTML(x.j,matchScore(S.me,x.j)):postCardHTML(x.p)).join('');
 }
 function madingHTML(){
   const chips=[{v:'all',l:'All'}].concat(KINDS);
-  return '<div class="sec-h"><div><p class="eyebrow">mading</p><h1>Community board</h1><p class="lede">Job info, events, certifications and anything else worth sharing with the community.</p></div><button class="btn" data-act="post-menu">'+ICON.plus+' Post to Mading</button></div>'+
+  return '<div class="hub-head"><div><h1>Mading</h1><p class="dit-lead">Jobs, events, certifications and anything else worth sharing with the community.</p></div><button class="dit-btn" data-act="post-menu">'+ICON.plus+' Post to Mading</button></div>'+
    '<div class="tgl-group" role="group" aria-label="Filter by type">'+chips.map(c=>'<button class="tgl" aria-pressed="'+(S.mad===c.v)+'" data-act="mad-filter" data-v="'+esc(c.v)+'">'+esc(c.l)+'</button>').join('')+'</div>'+
    '<div class="list" id="feed" aria-live="polite">'+feedHTML()+'</div>';
 }
 function latestHTML(){
   const l=S.posts.slice().sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||String(b.created_at).localeCompare(String(a.created_at))).slice(0,3);
   if(!l.length)return '';
-  return '<section class="list"><div class="sec-h"><h2>Latest on Mading</h2><button class="btn ghost sm" data-act="nav" data-v="mading">Open Mading</button></div>'+l.map(postCardHTML).join('')+'</section>';
+  return '<section class="list" aria-labelledby="h-latest"><div class="sec-h"><h2 id="h-latest" class="hub-h2">Latest on Mading</h2>'+navLink('mading','Open Mading','dit-btn dit-btn--ghost dit-btn--sm')+'</div>'+l.map(postCardHTML).join('')+'</section>';
 }
 function myPostsHTML(){
   const mine=S.posts.filter(p=>p.posted_by===S.user.id);
-  return '<div class="sec-h"><h2>Your Mading posts</h2><button class="btn ghost sm" data-act="post-menu">'+ICON.plus+' Post to Mading</button></div>'+(mine.length?'<div class="list">'+mine.map(postCardHTML).join('')+'</div>':'<p class="muted">Events, certifications and tips you share on Mading show up here.</p>');
+  return '<section class="list" aria-labelledby="h-myposts"><div class="sec-h"><h2 id="h-myposts" class="hub-h2">Your Mading posts</h2><button class="dit-btn dit-btn--ghost dit-btn--sm" data-act="post-menu">'+ICON.plus+' Post to Mading</button></div>'+(mine.length?mine.map(postCardHTML).join(''):'<p class="dit-muted">Events, certifications and tips you share on Mading show up here.</p>')+'</section>';
 }
 function postMenuHTML(){
   return '<h2 id="modal-title">What do you want to share?</h2><div class="choices">'+KINDS.map(k=>'<button type="button" class="choice" data-act="post-kind" data-v="'+esc(k.v)+'"><b>'+esc(k.one)+'</b><span>'+esc(k.d)+'</span></button>').join('')+'</div>';
@@ -545,15 +574,15 @@ function postFormHTML(kind,p){
   p=p||{};const k=kindOf(kind);
   return '<form class="form" data-form="post" data-id="'+esc(p.id||'')+'" data-kind="'+esc(kind)+'" novalidate><h2 id="modal-title">'+(p.id?'Edit ':'Post ')+esc(k.one.toLowerCase())+'</h2>'+
    '<div class="grid2">'+
-   field('p-title','Title','<input class="input" id="p-title" maxlength="140" value="'+esc(p.title||'')+'">','','span2')+
-   field('p-org','Organizer or source (optional)','<input class="input" id="p-org" maxlength="140" value="'+esc(p.organizer||'')+'">')+
-   (k.dl?field('p-date',k.dl+' (optional)','<input class="input" id="p-date" type="date" value="'+esc(p.event_date||'')+'">'):'')+
-   (kind==='event'?field('p-loc','Venue or online (optional)','<input class="input" id="p-loc" maxlength="120" value="'+esc(p.location||'')+'">'):'')+
+   field('p-title','Title','<input class="dit-input" id="p-title" maxlength="140" value="'+esc(p.title||'')+'">','','span2')+
+   field('p-org','Organizer or source (optional)','<input class="dit-input" id="p-org" maxlength="140" value="'+esc(p.organizer||'')+'">')+
+   (k.dl?field('p-date',k.dl+' (optional)','<input class="dit-input" id="p-date" type="date" value="'+esc(p.event_date||'')+'">'):'')+
+   (kind==='event'?field('p-loc','Venue or online (optional)','<input class="dit-input" id="p-loc" maxlength="120" value="'+esc(p.location||'')+'">'):'')+
    '</div>'+
-   field('p-desc','Details','<textarea class="input" id="p-desc" maxlength="2000">'+esc(p.description||'')+'</textarea>','Say what it is, who it is for and how to join. Up to 2000 characters.')+
-   field('p-link','Link (optional)','<input class="input" id="p-link" maxlength="300" placeholder="example.com/info" value="'+esc(p.link||'')+'">')+
-   (S.admin?'<label class="chk"><input type="checkbox" id="p-pin"'+(p.pinned?' checked':'')+'><span>Pin to the top of Mading</span></label>':'')+
-   '<p class="err" id="form-err" role="alert"></p><div class="btn-row"><button class="btn" type="submit">'+(p.id?'Save changes':'Post')+'</button><button class="btn ghost" type="button" data-act="close">Cancel</button></div></form>';
+   field('p-desc','Details','<textarea class="dit-input" id="p-desc" maxlength="2000">'+esc(p.description||'')+'</textarea>','Say what it is, who it is for and how to join. Up to 2000 characters.')+
+   field('p-link','Link (optional)','<input class="dit-input" id="p-link" type="url" maxlength="300" placeholder="example.com/info" value="'+esc(p.link||'')+'">')+
+   (S.admin?'<label class="dit-check"><input type="checkbox" id="p-pin"'+(p.pinned?' checked':'')+'><span>Pin to the top of Mading</span></label>':'')+
+   '<p class="err" id="form-err" role="alert"></p><div class="btn-row"><button class="dit-btn" type="submit">'+(p.id?'Save changes':'Post')+'</button><button class="dit-btn dit-btn--ghost" type="button" data-act="close">Cancel</button></div></form>';
 }
 function postDetailHTML(p){
   const k=kindOf(p.kind);
@@ -561,12 +590,12 @@ function postDetailHTML(p){
   const poster=S.members.find(m=>m.id===p.posted_by);
   const link=safeUrl(p.link);
   const conf=S.confirm==='p:'+p.id;
-  return '<div class="detail-head"><p class="eyebrow">'+esc(k.l)+'</p><h2 id="modal-title">'+esc(p.title)+'</h2>'+(p.organizer?'<p class="co">'+esc(p.organizer)+'</p>':'')+
+  return '<div class="detail-head"><p class="hub-eyebrow">'+esc(k.l)+'</p><h2 id="modal-title">'+esc(p.title)+'</h2>'+(p.organizer?'<p class="co">'+esc(p.organizer)+'</p>':'')+
    '<div class="tags">'+(p.pinned?'<span class="badge you">Pinned</span>':'')+(p.event_date?'<span class="tag">'+esc(k.dl||'Date')+': '+esc(fmtD(p.event_date))+'</span>'+(isPast(p.event_date)?'<span class="badge warn">Past</span>':''):'')+(p.location?'<span class="tag">'+esc(p.location)+'</span>':'')+'</div>'+
-   '<p class="hint">Posted '+esc(fmtD(p.created_at))+' by '+esc(poster?poster.full_name:'a Dara member')+'</p></div>'+
+   '<p class="note">Posted '+esc(fmtD(p.created_at))+' by '+esc(poster?poster.full_name:'a Dara member')+'</p></div>'+
    '<section class="sub"><p class="desc">'+esc(p.description)+'</p></section>'+
-   (link?'<div class="btn-row"><a class="btn" href="'+esc(link)+'" target="_blank" rel="noopener noreferrer">Open link '+ICON.ext+'</a></div>':'')+
-   (manage?'<section class="btn-row">'+(mine?'<button class="btn ghost" data-act="edit-post" data-id="'+esc(p.id)+'">Edit</button>':'')+(S.admin?'<button class="btn ghost" data-act="pin-post" data-id="'+esc(p.id)+'">'+(p.pinned?'Unpin':'Pin to top')+'</button>':'')+(conf?'<button class="btn danger" data-act="del-post-yes" data-id="'+esc(p.id)+'">Yes, delete this post</button><button class="btn ghost" data-act="cancel-confirm">Keep it</button>':'<button class="btn ghost" data-act="del-post" data-id="'+esc(p.id)+'">Delete</button>')+'</section>':'');
+   (link?'<div class="btn-row"><a class="dit-btn" href="'+esc(link)+'" target="_blank" rel="noopener noreferrer">Open link '+ICON.ext+'<span class="dit-visually-hidden"> (opens in a new tab)</span></a></div>':'')+
+   (manage?'<section class="btn-row">'+(mine?'<button class="dit-btn dit-btn--outline" data-act="edit-post" data-id="'+esc(p.id)+'">Edit</button>':'')+(S.admin?'<button class="dit-btn dit-btn--outline" data-act="pin-post" data-id="'+esc(p.id)+'">'+(p.pinned?'Unpin':'Pin to top')+'</button>':'')+(conf?'<button class="dit-btn dit-btn--danger" data-act="del-post-yes" data-id="'+esc(p.id)+'">Yes, delete this post</button><button class="dit-btn dit-btn--ghost" data-act="cancel-confirm">Keep it</button>':'<button class="dit-btn dit-btn--ghost" data-act="del-post" data-id="'+esc(p.id)+'">Delete</button>')+'</section>':'');
 }
 function showPost(id,fresh){
   const p=S.posts.find(x=>x.id===id);if(!p)return;
@@ -590,9 +619,9 @@ async function submitPost(form){
 
 function profileHTML(){
   const confirm=S.confirm==='me';
-  return '<section><p class="eyebrow">profile</p><h1>Your profile</h1><p class="lede">Changes update your match scores right away.</p></section>'+profileFormHTML(false)+
-   '<section class="card"><h3>Delete my profile</h3><p class="muted" style="margin:6px 0 12px">Removes your profile from the community database. Roles you posted stay until you delete them.</p>'+
-   (confirm?'<div class="btn-row"><button class="btn danger" data-act="del-me-yes">Yes, delete my profile</button><button class="btn ghost" data-act="cancel-confirm">Keep it</button></div>':'<button class="btn ghost" data-act="del-me">Delete my profile</button>')+'</section>';
+  return '<div class="hub-head"><div><h1>Your profile</h1><p class="dit-lead">Changes update your match scores right away.</p></div></div>'+profileFormHTML(false)+
+   '<section class="hub-danger" aria-labelledby="h-del"><h2 id="h-del" class="hub-h2">Delete my profile</h2><p class="dit-muted">Removes your profile and CV from the community database. Roles and Mading posts you made stay until you delete them.</p>'+
+   (confirm?'<div class="btn-row"><button class="dit-btn dit-btn--danger" data-act="del-me-yes">Yes, delete my profile</button><button class="dit-btn dit-btn--ghost" data-act="cancel-confirm">Keep it</button></div>':'<div><button class="dit-btn dit-btn--ghost" data-act="del-me">Delete my profile</button></div>')+'</section>';
 }
 function adminRows(){
   const q=S.aq.toLowerCase().trim();
@@ -601,21 +630,21 @@ function adminRows(){
 function adminTableHTML(){
   const rows=adminRows();
   if(!rows.length)return '<div style="padding:20px">'+emptyHTML('No participants found','Members appear here after they sign in and save a profile.')+'</div>';
-  return '<table><thead><tr><th>Name</th><th>Email</th><th>City</th><th>Status</th><th>Level</th><th>Skills</th><th>Joined</th><th>In pool</th><th>CV</th><th></th></tr></thead><tbody>'+rows.map(m=>{
+  return '<table><caption class="dit-visually-hidden">Participants</caption><thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">City</th><th scope="col">Status</th><th scope="col">Level</th><th scope="col">Skills</th><th scope="col">Joined</th><th scope="col">In pool</th><th scope="col">CV</th><th scope="col"><span class="dit-visually-hidden">Actions</span></th></tr></thead><tbody>'+rows.map(m=>{
     const conf=S.confirm==='m:'+m.id;
-    return '<tr><td><b>'+esc(m.full_name)+'</b><br><span class="note">'+esc(m.headline||'')+'</span></td><td class="sel">'+esc(m.email||'')+'</td><td>'+esc(m.city||'')+'</td><td>'+esc(lbl(STATUSES,m.status))+'</td><td>'+esc(lbl(LEVELS,m.level))+'</td><td>'+esc((m.skills||[]).join(', '))+'</td><td>'+esc(fmtD(m.created_at))+'</td><td>'+(m.in_pool?'Yes':'No')+'</td><td>'+(m.cv_path?'<button class="btn ghost sm" data-act="dl-cv" data-id="'+esc(m.id)+'">Download</button>':'')+'</td><td>'+(conf?'<button class="btn danger sm" data-act="member-del-yes" data-id="'+esc(m.id)+'">Confirm</button> <button class="btn ghost sm" data-act="cancel-confirm">Cancel</button>':'<button class="btn ghost sm" data-act="member-del" data-id="'+esc(m.id)+'">Remove</button>')+'</td></tr>';
+    return '<tr><td><b>'+esc(m.full_name)+'</b><br><span class="note">'+esc(m.headline||'')+'</span></td><td class="sel">'+esc(m.email||'')+'</td><td>'+esc(m.city||'')+'</td><td>'+esc(lbl(STATUSES,m.status))+'</td><td>'+esc(lbl(LEVELS,m.level))+'</td><td>'+esc((m.skills||[]).join(', '))+'</td><td>'+esc(fmtD(m.created_at))+'</td><td>'+(m.in_pool?'Yes':'No')+'</td><td>'+(m.cv_path?'<button class="dit-btn dit-btn--outline dit-btn--sm" data-act="dl-cv" data-id="'+esc(m.id)+'">Download</button>':'')+'</td><td>'+(conf?'<button class="dit-btn dit-btn--danger dit-btn--sm" data-act="member-del-yes" data-id="'+esc(m.id)+'">Confirm</button> <button class="dit-btn dit-btn--ghost dit-btn--sm" data-act="cancel-confirm">Cancel</button>':'<button class="dit-btn dit-btn--ghost dit-btn--sm" data-act="member-del" data-id="'+esc(m.id)+'">Remove</button>')+'</td></tr>';
   }).join('')+'</tbody></table>';
 }
 function adminHTML(){
   if(!S.admin)return emptyHTML('Admins only','Ask the community team to add you as an admin.');
   const total=S.members.length,pool=S.members.filter(m=>m.in_pool).length;
-  return (S.me?'':'<div><button class="btn ghost sm" data-act="nav" data-v="home">Back to profile setup</button></div>')+'<div class="sec-h"><div><p class="eyebrow">admin</p><h1>Participants</h1></div><div class="btn-row"><button class="btn" data-act="export-csv">Export CSV</button>'+(DEMO?'<button class="btn ghost" data-act="reset-demo">Reset demo data</button>':'')+'</div></div>'+
-   '<div class="strip"><span><b>'+total+'</b> registered</span><span><b>'+pool+'</b> in the talent pool</span><span><b>'+S.jobs.length+'</b> roles posted</span><span><b>'+S.posts.length+'</b> Mading posts</span></div>'+
-   '<div class="field"><label for="a-q">Search participants</label><input class="input" id="a-q" data-aq type="search" placeholder="Name, email, city or skill" value="'+esc(S.aq)+'"></div>'+
+  return (S.me?'':'<div>'+navLink('home','Back to profile setup','dit-btn dit-btn--ghost dit-btn--sm')+'</div>')+'<div class="hub-head"><div><h1>Participants</h1><p class="dit-lead">Everyone who has saved a profile, including members outside the Talent Pool.</p></div><div class="btn-row"><button class="dit-btn" data-act="export-csv">Export CSV</button>'+(DEMO?'<button class="dit-btn dit-btn--outline" data-act="reset-demo">Reset demo data</button>':'')+'</div></div>'+
+   '<ul class="hub-stats" role="list"><li class="dit-card dit-card--soft"><span class="hub-stats__num">'+total+'</span><span>registered</span></li><li class="dit-card dit-card--soft"><span class="hub-stats__num">'+pool+'</span><span>in the Talent Pool</span></li><li class="dit-card dit-card--soft"><span class="hub-stats__num">'+S.jobs.length+'</span><span>roles posted</span></li><li class="dit-card dit-card--soft"><span class="hub-stats__num">'+S.posts.length+'</span><span>Mading posts</span></li></ul>'+
+   '<div class="filters dit-card dit-card--soft" role="search" aria-label="Search participants"><div class="search">'+ICON.search+'<input class="dit-input" id="a-q" data-aq type="search" placeholder="Name, email, city or skill" aria-label="Search participants" value="'+esc(S.aq)+'"></div></div>'+
    '<div class="tbl-wrap" id="admin-table">'+adminTableHTML()+'</div>';
 }
 function viewHTML(){
-  if(!S.ready)return '<p style="padding:40px 16px;text-align:center;color:var(--muted)">Loading Dara in Tech…</p>';
+  if(!S.ready)return '<p style="padding:40px 16px;text-align:center">Loading Dara in Tech…</p>';
   if(!S.user)return authHTML();
   if(!S.me&&S.admin&&S.view==='admin')return shell(adminHTML(),false);
   if(!S.me)return shell(onboardHTML(),false);
@@ -625,6 +654,7 @@ function viewHTML(){
 }
 function render(){
   $('#app').innerHTML=viewHTML();
+  document.title=(!S.user?'Sign in':!S.me&&S.view!=='admin'?'Welcome':TITLES[S.view]||'Home')+' · Member Hub · Dara in Tech';
   initPickers();
   const code=$('#a-code');if(code)code.focus();
   const cur=$('.tab[aria-current="page"]');
@@ -654,7 +684,7 @@ function closeModal(){
 function candListHTML(j){
   const rows=candidatesFor(j).filter(x=>x.r.total>=S.candMin).slice(0,25);
   const sk=(j.req_skills||[]).concat(j.nice_skills||[]);
-  if(!rows.length)return emptyHTML('No members at this level','Lower the filter, or wait for more members to join the pool.');
+  if(!rows.length)return emptyHTML('No members at this level','Lower the filter, or wait for more members to join the Talent Pool.');
   return '<ul class="cand-list">'+rows.map(x=>'<li>'+personHTML(x.m,x.r,sk)+'</li>').join('')+'</ul>';
 }
 function jobDetailHTML(j){
@@ -663,37 +693,38 @@ function jobDetailHTML(j){
   const poster=S.members.find(m=>m.id===j.posted_by);
   const link=safeUrl(j.apply_link);
   const conf=S.confirm==='j:'+j.id;
-  return '<div class="detail-head"><p class="eyebrow">'+esc(j.category)+'</p><h2 id="modal-title">'+esc(j.title)+'</h2><p class="co">'+esc(j.company)+(j.location?' · '+esc(j.location):'')+'</p>'+
+  return '<div class="detail-head"><p class="hub-eyebrow">'+esc(j.category)+'</p><h2 id="modal-title">'+esc(j.title)+'</h2><p class="co">'+esc(j.company)+(j.location?' · '+esc(j.location):'')+'</p>'+
    '<div class="tags"><span class="tag">'+esc(lbl(JOB_TYPES,j.job_type))+'</span><span class="tag">'+esc(lbl(MODES,j.work_mode))+'</span><span class="tag">'+esc(lbl(LEVELS,j.level))+'</span>'+(isOpen(j)?'':'<span class="badge warn">Closed</span>')+(j.deadline?'<span class="tag">Closes '+esc(fmtD(j.deadline))+'</span>':'')+'</div>'+
-   '<p class="hint">Posted '+esc(fmtD(j.created_at))+' by '+esc(poster?poster.full_name:'a Dara member')+'</p></div>'+
-   (mine?'':'<section class="panel"><div class="mscore m-'+band(r.total)+'"><strong>'+r.total+'%</strong><span>'+bandLabel(r.total)+'</span><div class="bar"><i style="width:'+r.total+'%"></i></div></div><ul class="bk">'+r.parts.map(p=>'<li><div class="bk-top"><span>'+esc(p.label)+'</span><span class="mono">'+(p.ok?Math.round(p.s*p.w)+' / '+p.w:'not rated')+'</span></div><div class="track"><i style="width:'+(p.ok?Math.round(p.s*100):0)+'%"></i></div><p class="note">'+esc(p.note)+'</p></li>').join('')+'</ul></section>')+
+   '<p class="note">Posted '+esc(fmtD(j.created_at))+' by '+esc(poster?poster.full_name:'a Dara member')+'</p></div>'+
+   (mine?'':'<section class="panel" aria-label="Your match"><div class="mscore m-'+band(r.total)+'"><strong>'+r.total+'%</strong><span>'+bandLabel(r.total)+'</span><div class="bar"><i style="width:'+r.total+'%"></i></div></div><ul class="bk">'+r.parts.map(p=>'<li><div class="bk-top"><span>'+esc(p.label)+'</span><span class="mono">'+(p.ok?Math.round(p.s*p.w)+' / '+p.w:'not rated')+'</span></div><div class="track"><i style="width:'+(p.ok?Math.round(p.s*100):0)+'%"></i></div><p class="note">'+esc(p.note)+'</p></li>').join('')+'</ul></section>')+
    ((j.req_skills||[]).length?'<section class="sub"><h3>Required skills</h3><div class="chips">'+(mine?(j.req_skills||[]).map(s=>'<span class="chip">'+esc(s)+'</span>').join(''):chipsFor(r.reqHit,r.reqMiss))+'</div></section>':'')+
    ((j.nice_skills||[]).length?'<section class="sub"><h3>Nice to have</h3><div class="chips">'+(mine?(j.nice_skills||[]).map(s=>'<span class="chip">'+esc(s)+'</span>').join(''):chipsFor(r.niceHit,r.niceMiss))+'</div></section>':'')+
    (j.description?'<section class="sub"><h3>About the role</h3><p class="desc">'+esc(j.description)+'</p></section>':'')+
-   '<section class="sub"><h3>How to apply</h3><div class="btn-row">'+(link?'<a class="btn" href="'+esc(link)+'" target="_blank" rel="noopener noreferrer">Apply on their site '+ICON.ext+'</a>':'')+(j.contact_email?'<span>Contact: <b class="sel">'+esc(j.contact_email)+'</b></span><button class="btn ghost sm" data-act="copy" data-v="'+esc(j.contact_email)+'">Copy</button>':'')+'</div></section>'+
-   (manage?'<section class="sub"><div class="sec-h"><h3>Matching members</h3><div class="field" style="min-width:150px"><label for="cand-min">Show</label><select class="input" id="cand-min">'+opts([{v:'0',l:'Everyone'},{v:'40',l:'40% and up'},{v:'60',l:'60% and up'},{v:'80',l:'80% and up'}],String(S.candMin))+'</select></div></div><div id="cand-list">'+candListHTML(j)+'</div></section>':'')+
-   (manage?'<section class="btn-row">'+(mine?'<button class="btn ghost" data-act="edit-job" data-id="'+esc(j.id)+'">Edit</button><button class="btn ghost" data-act="toggle-open" data-id="'+esc(j.id)+'">'+(j.is_open===false?'Reopen role':'Close role')+'</button>':'')+(conf?'<button class="btn danger" data-act="del-job-yes" data-id="'+esc(j.id)+'">Yes, delete this role</button><button class="btn ghost" data-act="cancel-confirm" data-id="'+esc(j.id)+'">Keep it</button>':'<button class="btn ghost" data-act="del-job" data-id="'+esc(j.id)+'">Delete</button>')+'</section>':'');
+   '<section class="sub"><h3>How to apply</h3><div class="btn-row">'+(link?'<a class="dit-btn" href="'+esc(link)+'" target="_blank" rel="noopener noreferrer">Apply on their site '+ICON.ext+'<span class="dit-visually-hidden"> (opens in a new tab)</span></a>':'')+(j.contact_email?'<span>Contact: <b class="sel">'+esc(j.contact_email)+'</b></span><button class="dit-btn dit-btn--ghost dit-btn--sm" data-act="copy" data-v="'+esc(j.contact_email)+'">Copy</button>':'')+'</div></section>'+
+   (manage?'<section class="sub"><div class="sec-h"><h3>Matching members</h3><div class="dit-field" style="min-width:170px"><label class="dit-label" for="cand-min">Show</label><select class="dit-input" id="cand-min">'+opts([{v:'0',l:'Everyone'},{v:'40',l:'40% and up'},{v:'60',l:'60% and up'},{v:'80',l:'80% and up'}],String(S.candMin))+'</select></div></div><div id="cand-list">'+candListHTML(j)+'</div></section>':'')+
+   (manage?'<section class="btn-row">'+(mine?'<button class="dit-btn dit-btn--outline" data-act="edit-job" data-id="'+esc(j.id)+'">Edit</button><button class="dit-btn dit-btn--outline" data-act="toggle-open" data-id="'+esc(j.id)+'">'+(j.is_open===false?'Reopen role':'Close role')+'</button>':'')+(conf?'<button class="dit-btn dit-btn--danger" data-act="del-job-yes" data-id="'+esc(j.id)+'">Yes, delete this role</button><button class="dit-btn dit-btn--ghost" data-act="cancel-confirm" data-id="'+esc(j.id)+'">Keep it</button>':'<button class="dit-btn dit-btn--ghost" data-act="del-job" data-id="'+esc(j.id)+'">Delete</button>')+'</section>':'');
 }
 function jobFormHTML(j){
   j=j||{};
   const cat=j.category||CATEGORIES[0];
   const sug=SUG_BY_CAT[cat]||[];
-  return '<form class="form" data-form="job" data-id="'+esc(j.id||'')+'" novalidate><h2 id="modal-title">'+(j.id?'Edit role':'Post a role')+'</h2><p class="muted">Members see this role with a match score. Only members in the pool are ranked for you.</p>'+
+  return '<form class="form" data-form="job" data-id="'+esc(j.id||'')+'" novalidate><h2 id="modal-title">'+(j.id?'Edit role':'Post a role')+'</h2><p class="dit-muted">Members see this role with a match score. Only members in the Talent Pool are ranked for you.</p>'+
    '<div class="grid2">'+
-   field('j-title','Role title','<input class="input" id="j-title" maxlength="140" value="'+esc(j.title||'')+'" placeholder="Junior Data Analyst">')+
-   field('j-company','Company','<input class="input" id="j-company" maxlength="140" value="'+esc(j.company||'')+'">')+
-   field('j-cat','Field','<select class="input" id="j-cat">'+opts(CATEGORIES,cat)+'</select>')+
-   field('j-level','Level','<select class="input" id="j-level">'+opts(LEVELS,j.level||'junior')+'</select>')+
-   field('j-type','Job type','<select class="input" id="j-type">'+opts(JOB_TYPES,j.job_type||'full_time')+'</select>')+
-   field('j-mode','Work setup','<select class="input" id="j-mode">'+opts(MODES,j.work_mode||'hybrid')+'</select>')+
-   field('j-loc','Location','<input class="input" id="j-loc" maxlength="100" value="'+esc(j.location||'')+'" placeholder="Jakarta">','Leave empty if it does not matter.')+
-   field('j-deadline','Apply by (optional)','<input class="input" id="j-deadline" type="date" value="'+esc(j.deadline||'')+'">')+
+   field('j-title','Role title','<input class="dit-input" id="j-title" maxlength="140" value="'+esc(j.title||'')+'" placeholder="Junior Data Analyst">')+
+   field('j-company','Company','<input class="dit-input" id="j-company" maxlength="140" autocomplete="organization" value="'+esc(j.company||'')+'">')+
+   field('j-cat','Field','<select class="dit-input" id="j-cat">'+opts(CATEGORIES,cat)+'</select>')+
+   field('j-level','Level','<select class="dit-input" id="j-level">'+opts(LEVELS,j.level||'junior')+'</select>')+
+   field('j-type','Job type','<select class="dit-input" id="j-type">'+opts(JOB_TYPES,j.job_type||'full_time')+'</select>')+
+   field('j-mode','Work setup','<select class="dit-input" id="j-mode">'+opts(MODES,j.work_mode||'hybrid')+'</select>')+
+   field('j-loc','Location','<input class="dit-input" id="j-loc" maxlength="100" value="'+esc(j.location||'')+'" placeholder="Jakarta">','Leave empty if it does not matter.')+
+   field('j-deadline','Apply by (optional)','<input class="dit-input" id="j-deadline" type="date" value="'+esc(j.deadline||'')+'">')+
    '</div>'+
-   '<div class="field"><span class="lbl">Required skills</span>'+pickerHTML('req',j.req_skills||[],sug,'Type a skill and press Enter')+'<span class="hint">Worth 40% of the match score.</span></div>'+
-   '<div class="field"><span class="lbl">Nice-to-have skills</span>'+pickerHTML('nice',j.nice_skills||[],sug,'Type a skill and press Enter')+'<span class="hint">Worth 10%.</span></div>'+
-   field('j-desc','About the role (optional)','<textarea class="input" id="j-desc" maxlength="4000">'+esc(j.description||'')+'</textarea>')+
-   '<div class="grid2">'+field('j-link','Apply link','<input class="input" id="j-link" maxlength="300" value="'+esc(j.apply_link||'')+'" placeholder="company.com/careers/role">')+field('j-mail','Contact email','<input class="input" id="j-mail" type="email" maxlength="160" value="'+esc(j.contact_email||'')+'">')+'</div>'+
-   '<p class="err" id="form-err" role="alert"></p><div class="btn-row"><button class="btn" type="submit">'+(j.id?'Save changes':'Post role')+'</button><button class="btn ghost" type="button" data-act="close">Cancel</button></div></form>';
+   group('g-req','Required skills',pickerHTML('req',j.req_skills||[],sug,'Type a skill and press Enter'),'Worth 40% of the match score.')+
+   group('g-nice','Nice-to-have skills',pickerHTML('nice',j.nice_skills||[],sug,'Type a skill and press Enter'),'Worth 10%.')+
+   field('j-desc','About the role (optional)','<textarea class="dit-input" id="j-desc" maxlength="4000">'+esc(j.description||'')+'</textarea>')+
+   '<div class="grid2">'+field('j-link','Apply link','<input class="dit-input" id="j-link" type="url" maxlength="300" value="'+esc(j.apply_link||'')+'" placeholder="company.com/careers/role">')+field('j-mail','Contact email','<input class="dit-input" id="j-mail" type="email" maxlength="160" value="'+esc(j.contact_email||'')+'">')+'</div>'+
+   '<p class="dit-hint">Add an apply link, a contact email, or both.</p>'+
+   '<p class="err" id="form-err" role="alert"></p><div class="btn-row"><button class="dit-btn" type="submit">'+(j.id?'Save changes':'Post role')+'</button><button class="dit-btn dit-btn--ghost" type="button" data-act="close">Cancel</button></div></form>';
 }
 function showJob(id,fresh){
   const j=S.jobs.find(x=>x.id===id);if(!j)return;
@@ -711,9 +742,25 @@ async function afterLogin(u){
   S.admin=await API.isAdmin(u);
   S.me=await API.getMe(u.id);
   await refreshData();
-  S.view='home';S.ready=true;
-  render();window.scrollTo(0,0);
+  S.view=viewFromHash()||'home';S.ready=true;
+  if(S.me)history.replaceState(null,'','#/'+slugOf(S.view));
+  render();toTop();
 }
+/* View changes jump to the top instantly (the site's smooth scrolling is for in-page anchors only). */
+function toTop(){window.scrollTo({top:0,left:0,behavior:'instant'})}
+/* Move to a view: new history entry, fresh render, focus on the content (so keyboard and screen reader users land there). */
+function go(v){
+  S.view=v;S.confirm=null;S.cvPending=null;S.cvRemove=false;S.cvShare=null;
+  const h='#/'+slugOf(v);if(location.hash!==h)history.pushState(null,'',h);
+  render();toTop();
+  const m=$('#main');if(m)m.focus({preventScroll:true});
+}
+window.addEventListener('popstate',()=>{
+  if(!S.user)return;
+  const v=viewFromHash()||'home';if(v===S.view)return;
+  if($('#modal-root .modal'))closeModal();
+  S.view=v;S.confirm=null;render();
+});
 function setErr(msg){const e=$('#form-err');if(e){e.textContent=msg;e.scrollIntoView({block:'center',behavior:'smooth'})}}
 async function submitProfile(form){
   flushPickers();
@@ -746,7 +793,7 @@ async function submitProfile(form){
     S.me=Object.assign({},row,saved||{});
     S.cvPending=null;S.cvRemove=false;S.cvShare=null;
     await refreshData();
-    if(onb){S.view='home';render();window.scrollTo(0,0);toast('Welcome to Dara in Tech')}
+    if(onb){S.view='home';history.replaceState(null,'','#/home');render();toTop();toast('Welcome to Dara in Tech')}
     else{render();toast('Profile saved')}
   }catch(e){btn.disabled=false;setErr(e.message)}
 }
@@ -787,10 +834,10 @@ document.addEventListener('click',async e=>{
   const t=e.target.closest('[data-act]');if(!t)return;
   const a=t.dataset.act;
   if(a==='overlay'){if(e.target===t)closeModal();return}
-  if(t.tagName==='A'&&t.getAttribute('href')==='#')e.preventDefault();
+  if(t.tagName==='A'&&(t.getAttribute('href')||'').charAt(0)==='#'){if(e.metaKey||e.ctrlKey||e.shiftKey)return;e.preventDefault()}
   try{
     switch(a){
-      case 'nav':S.view=t.dataset.v;S.confirm=null;S.cvPending=null;S.cvRemove=false;S.cvShare=null;render();window.scrollTo(0,0);break;
+      case 'nav':go(t.dataset.v);break;
       case 'tab':S.tab=t.dataset.v;render();break;
       case 'open-job':S.candMin=0;S.confirm=null;showJob(t.dataset.id,true);break;
       case 'close':closeModal();break;
@@ -821,7 +868,7 @@ document.addEventListener('click',async e=>{
         break}
       case 'clear-filters':S.f={q:'',cat:'',mode:'',type:'',min:0,sort:'match',open:true};render();break;
       case 'copy':try{await navigator.clipboard.writeText(t.dataset.v);toast('Copied')}catch(err){toast('Select the text to copy it')}break;
-      case 'signout':await API.signOut();Object.assign(S,{user:null,admin:false,me:null,view:'home',authStep:'email',authErr:'',busy:false,confirm:null,cvPending:null,cvRemove:false,cvShare:null,mad:'all'});closeModal();render();break;
+      case 'signout':await API.signOut();history.replaceState(null,'',location.pathname);Object.assign(S,{user:null,admin:false,me:null,view:'home',authStep:'email',authErr:'',busy:false,confirm:null,cvPending:null,cvRemove:false,cvShare:null,mad:'all'});closeModal();render();break;
       case 'google':try{await API.google()}catch(err){S.authErr=err.message;render()}break;
       case 'back-email':S.authStep='email';S.authErr='';render();break;
       case 'export-csv':await saveFile('dara-in-tech-participants.csv',csvText());break;
@@ -829,7 +876,7 @@ document.addEventListener('click',async e=>{
       case 'member-del-yes':{const mm=S.members.find(x=>x.id===t.dataset.id);if(mm&&mm.cv_path)await API.removeCV(mm).catch(()=>{})}await API.deleteMember(t.dataset.id);S.confirm=null;await refreshData();render();toast('Participant removed');break;
       case 'reset-demo':await API.resetDemo();await refreshData();S.me=await API.getMe(S.user.id);render();toast('Demo data reset');break;
       case 'del-me':S.confirm='me';render();break;
-      case 'del-me-yes':if(S.me&&S.me.cv_path)await API.removeCV(S.me).catch(()=>{});await API.deleteMe(S.user.id);S.me=null;S.confirm=null;await refreshData();render();window.scrollTo(0,0);toast('Profile deleted');break;
+      case 'del-me-yes':if(S.me&&S.me.cv_path)await API.removeCV(S.me).catch(()=>{});await API.deleteMe(S.user.id);S.me=null;S.confirm=null;await refreshData();render();toTop();toast('Profile deleted');break;
     }
   }catch(err){toast(err&&err.message?err.message:'Something went wrong. Try again.')}
 });
@@ -883,6 +930,12 @@ document.addEventListener('input',onInput);
 document.addEventListener('change',onInput);
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&$('#modal-root .modal')){closeModal();return}
+  /* Keep Tab inside an open dialog. */
+  const dlg=$('#modal-root .modal');
+  if(e.key==='Tab'&&dlg){
+    const f=$$('a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])',dlg).filter(x=>x.offsetParent!==null);
+    if(f.length){const a=f[0],z=f[f.length-1];if(e.shiftKey&&(document.activeElement===a||document.activeElement===dlg)){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
+  }
   const t=e.target;
   if(t&&t.id&&t.id.indexOf('pk-')===0){
     const n=t.id.slice(3);
@@ -900,7 +953,7 @@ document.addEventListener('visibilitychange',async()=>{
 async function boot(){
   if(!DEMO&&!CONFIGURED){
     console.error('[Dara Hub] Not configured: set PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY (or PUBLIC_DEMO_MODE=true for local development only).');
-    $('#app').innerHTML='<div class="auth"><section class="card" data-hub-unconfigured><h2>The Member Hub is not available yet</h2><p class="muted" style="margin-top:8px">We are still setting it up. Please check back soon.</p><div style="height:14px"></div><a class="btn ghost" href="/">Back to Dara in Tech</a></section></div>';
+    $('#app').innerHTML='<main class="hub-main" id="main"><div class="dit-container hub-center"><section class="dit-card dit-card--soft hub-msg" data-hub-unconfigured><h1 class="hub-h2">The Member Hub is not available yet</h1><p class="dit-muted">We are still setting it up. Please check back soon.</p><a class="dit-btn dit-btn--outline" href="/">Back to Dara in Tech</a></section></div></main>';
     return;
   }
   try{
@@ -908,7 +961,7 @@ async function boot(){
     const u=await API.session();
     if(u){await afterLogin(u)}else{S.ready=true;render()}
   }catch(e){
-    $('#app').innerHTML='<div class="auth"><section class="card"><h2>Could not start</h2><p class="muted" style="margin-top:8px">'+esc(e.message||'Unknown error')+'</p></section></div>';
+    $('#app').innerHTML='<main class="hub-main" id="main"><div class="dit-container hub-center"><section class="dit-card dit-card--soft hub-msg" role="alert"><h1 class="hub-h2">The Member Hub could not start</h1><p class="dit-muted">'+esc(e.message||'Unknown error')+'</p><a class="dit-btn dit-btn--outline" href="/">Back to Dara in Tech</a></section></div></main>';
   }
 }
 if(window.__DARA_TEST)window.__DARA_TEST={matchScore,nk,seedDemo,csvText,S};

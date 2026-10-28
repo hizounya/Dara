@@ -55,7 +55,7 @@ const fmtDate = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('en-
         <h1 id="hero-title" class="dit-hero-title">Hi, we’re<br /><GradientText>Dara in Tech</GradientText></h1>
         <p class="hero__lead">{site.tagline}</p>
         <div class="hero__ctas">
-          <Button href={site.joinUrl} size="lg" arrow>Join our community</Button>
+          <Button href={site.joinUrl} size="lg" arrow>Join our community<span class="dit-visually-hidden"> on {site.joinVia}</span></Button>
           <Button href="#talent-hub" size="lg" variant="outline">Explore Talent Hub</Button>
         </div>
       </div>
@@ -86,12 +86,12 @@ const fmtDate = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('en-
     <div class="dit-container split split--even">
       <div class="meaning__card">
         <h2 id="meaning-title">The meaning behind <GradientText>Dara</GradientText></h2>
-        <DefinitionCard word="da • ra" meta="noun • indonesian, malay" meaning="A young woman." />
+        <DefinitionCard word="da·ra" meta="noun · Indonesian" meaning="A young woman." />
       </div>
       <div class="prose">
-        <p class="dit-lead">“Dara” means a young woman in Indonesian and Malay. But to us, it’s more than just a name.</p>
-        <p>It represents the curiosity, potential, and collective strength of women who are ready to explore what’s possible.</p>
-        <p class="dit-kicker">Because we believe the future of tech is better when more women are part of it.</p>
+        <p class="dit-lead">“Dara” is an Indonesian word for a young woman. We chose it because we wanted a name that feels close to home, and a community where women feel the same sense of belonging.</p>
+        <p>To us, Dara is not about age or where you are in your career. It’s about every woman who has ever been curious about tech, wanted to try something new, or wished she had someone to figure things out with.</p>
+        <p class="dit-kicker">Because women deserve more than a place in tech. They deserve a community that helps them thrive in it.</p>
       </div>
     </div>
 
@@ -241,7 +241,7 @@ const fmtDate = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('en-
           <h2 id="join-title">Be part of <GradientText>Dara</GradientText></h2>
           <p class="dit-kicker">Your next chapter in tech doesn’t have to be a solo journey.</p>
           <p class="dit-lead">Come learn something new, meet your people, and discover where tech can take you.</p>
-          <div><Button href={site.joinUrl} size="lg" arrow>Join our community</Button></div>
+          <div class="join__cta"><Button href={site.joinUrl} size="lg" arrow>Join our community<span class="dit-visually-hidden"> on {site.joinVia}</span></Button><p class="dit-muted join__note">Opens our {site.joinVia} community.</p></div>
         </div>
         <Mascot pose="excited" width={320} alt="Dala with arms open, inviting you in" class="join__dala" />
       </div>
@@ -357,10 +357,13 @@ const fmtDate = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('en-
   .join { display: grid; gap: var(--space-3); padding: var(--space-5) var(--space-3) 0; overflow: hidden; text-align: center; }
   .join__copy { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
   .join__copy .dit-lead { max-width: 44ch; }
+  .join__cta { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); }
+  .join__note { font-size: var(--fs-small); }
   .join :global(.join__dala) { width: min(60vw, 300px); justify-self: center; margin-bottom: -6px; }
   @media (min-width: 960px) {
     .join { grid-template-columns: 1.5fr 1fr; align-items: end; text-align: left; padding: var(--space-6) var(--space-6) 0; }
     .join__copy { align-items: flex-start; padding-bottom: var(--space-6); }
+    .join__cta { align-items: flex-start; }
     .join :global(.join__dala) { justify-self: end; }
   }
 </style>

@@ -4,6 +4,7 @@
 // Known v1 defects are marked test.fail(): they are recorded, not hidden, and Playwright
 // reports an unexpected pass once a defect is fixed so the marker can be removed.
 import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 const XSS = '<img src=x onerror="window.__xss=1">';
 
@@ -107,7 +108,7 @@ test.describe('sign in (demo)', () => {
 
 test.describe('onboarding', () => {
   test('Talent Pool is opt-in (unchecked by default)', async ({ page }) => {
-    test.fail(true, 'Known defect: pool checkbox starts ticked (audit finding 2). Fix planned for Phase 5.');
+    test.fail(legacy, 'v1 defect: pool checkbox starts ticked (audit finding 2). Fixed in the Phase 5 Hub.');
     await signIn(page, 'tester@example.com');
     await expect(page.locator('#f-pool')).not.toBeChecked();
   });
@@ -200,4 +201,58 @@ test.describe('admin (demo)', () => {
     await page.click('button[data-act="export-csv"]');
     expect((await download).suggestedFilename()).toBe('dara-in-tech-participants.csv');
   });
+});
+
+test.describe('navigation (Phase 5)', () => {
+  test('each tab has its own address, Back works, and deep links open the right view', async ({ page }) => {
+    test.skip(legacy, 'v1 has no routing');
+    await onboard(page);
+    await expect(page).toHaveURL(/#\/home$/);
+    await page.click('.tab[data-v="mading"]');
+    await expect(page).toHaveURL(/#\/mading$/);
+    await expect(page).toHaveTitle(/^Mading · Member Hub/);
+    await expect(page.locator('#main')).toBeFocused();
+    await page.click('.tab[data-v="pool"]');
+    await expect(page).toHaveURL(/#\/talent-pool$/);
+    await page.goBack();
+    await expect(page.locator('.tab[data-v="mading"]')).toHaveAttribute('aria-current', 'page');
+    await page.goto(hubUrl + '#/profile');
+    await expect(page.locator('.tab[data-v="profile"]')).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('form[data-form="profile"]')).toBeVisible();
+  });
+
+  test('Tab stays inside an open dialog', async ({ page }) => {
+    test.skip(legacy, 'v1 has no focus trap');
+    await onboard(page);
+    await page.click('.tab[data-v="pool"]');
+    await page.locator('button[data-act="post-job"]').first().click();
+    for (let i = 0; i < 40; i++) await page.keyboard.press('Tab');
+    expect(await page.evaluate(() => !!document.activeElement.closest('#modal-root .modal'))).toBe(true);
+  });
+});
+
+test.describe('accessibility (axe, WCAG 2 A/AA)', () => {
+  for (const theme of ['light', 'dark']) {
+    test(`sign-in, home, Talent Pool, Mading and profile have no violations in ${theme} mode`, async ({ page }) => {
+      test.skip(legacy, 'v1 is the unchanged baseline');
+      await page.addInitScript((t) => localStorage.setItem('dit-theme', t), theme);
+      const check = async (label) => {
+        // Measure after the toast has gone: mid-fade it is partly transparent and axe reads a false low contrast.
+        // (Once hidden, the toast clears its text, so nothing invisible is left to measure.)
+        await expect(page.locator('#toast')).toHaveText('', { timeout: 6000 });
+        const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+        expect(violations.map((v) => `${label} ${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
+      };
+      await page.goto(hubUrl);
+      await page.waitForSelector('form[data-form="auth-email"]');
+      await check('sign-in');
+      await onboard(page);
+      await check('home');
+      for (const v of ['pool', 'mading', 'profile']) {
+        await page.click(`.tab[data-v="${v}"]`);
+        await expect(page.locator(`.tab[data-v="${v}"]`)).toHaveAttribute('aria-current', 'page');
+        await check(v);
+      }
+    });
+  }
 });

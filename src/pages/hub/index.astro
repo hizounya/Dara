@@ -1,53 +1,26 @@
 ---
-// Member Hub (Talent Hub v1, moved here in Phase 4, step 2).
-// It keeps its own v1 stylesheet and fonts until the Phase 5 redesign, so it does not load site.css.
-// Theme: light by default (never follows the OS); dark only when chosen, using brand-derived colours below.
+// Member Hub. The app (src/hub/hub.js) renders the header, tabs and views into #app;
+// this page supplies the shared document shell, theme, fonts, footer and the optimised brand images.
 import { getImage } from 'astro:assets';
-import ThemeInit from '../../components/layout/ThemeInit.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteFooter from '../../components/layout/SiteFooter.astro';
 import logoSrc from '../../assets/brand/dara-in-tech-logo.png';
 import dalaSrc from '../../assets/brand/mascot/dala-wave.png';
-import '../../hub/legacy.css';
+import dalaEmptySrc from '../../assets/brand/mascot/dala-read.png';
+import '../../hub/hub.css';
 
 const logo = await getImage({ src: logoSrc, width: 240, format: 'webp' });
 const dala = await getImage({ src: dalaSrc, width: 480, format: 'webp' });
+const dalaEmpty = await getImage({ src: dalaEmptySrc, width: 240, format: 'webp' });
 ---
-<!doctype html>
-<html lang="en" data-theme="light">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <ThemeInit />
-    <title>Member Hub · Dara in Tech</title>
-    <meta name="description" content="Sign in to the Dara in Tech Member Hub: your profile, the Talent Pool, roles from the community, and the Mading board." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=JetBrains+Mono:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" />
-    <style is:global>
-      /* Dark theme mapped onto the v1 variables with brand-derived colours (same palette as src/styles/web.css).
-         html:root raises specificity above v1's own dark rules, which this replaces. legacy.css itself is unchanged. */
-      html:root[data-theme="dark"] {
-        --bg: #1D1220; --surface: #2A1A2E; --surface-2: #3A2850; --fg: #E9E5FA; --muted: #B9AFFA; --line: #4A3A63;
-        --accent: #B9AFFA; --accent-strong: #E9E5FA; --accent-soft: #3A2850; --on-accent: #1D1220;
-        --ok: #72D6A8; --ok-soft: #173A2C; --bad: #FF93A6; --bad-soft: #3F1F29;
-        --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px rgba(0,0,0,.35);
-        --head: #E9E5FA; --grad: linear-gradient(90deg, #B9AFFA 0%, #B582E4 55%, #F2A4D2 100%);
-        --band: linear-gradient(90deg, #3A2850, #4A2840); --band-fg: #E9E5FA; --logo-bg: #FFFFFF;
-        --circuit: #8A5499; --circuit-2: #4A3A63;
-        color-scheme: dark;
-      }
-      .theme-btn { width: 34px; height: 34px; padding: 0; border-radius: 50%; }
-      .theme-btn .ic { width: 16px; height: 16px; }
-      [data-theme-toggle] .i-sun, :root[data-theme="dark"] [data-theme-toggle] .i-moon { display: none; }
-      :root[data-theme="dark"] [data-theme-toggle] .i-sun { display: block; }
-    </style>
-  </head>
-  <body>
-    <div id="app" data-logo={logo.src} data-dala={dala.src}><p style="padding:40px 16px;text-align:center;color:var(--muted)">Loading Dara in Tech…</p></div>
-    <div id="modal-root"></div>
-    <div id="toast" role="status" aria-live="polite"></div>
-    <noscript><p style="padding:0 16px;text-align:center">The Member Hub needs JavaScript to run.</p></noscript>
-    <script>
-      import '../../hub/hub.js';
-    </script>
-  </body>
-</html>
+<BaseLayout title="Member Hub · Dara in Tech" description="Sign in to the Dara in Tech Member Hub: your profile, the Talent Pool, roles from the community, and the Mading board.">
+  <a class="dit-skip" href="#main">Skip to content</a>
+  <div id="app" data-logo={logo.src} data-dala={dala.src} data-dala-empty={dalaEmpty.src}><p style="padding:40px 16px;text-align:center">Loading the Member Hub…</p></div>
+  <div id="modal-root"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <noscript><p style="padding:0 16px;text-align:center">The Member Hub needs JavaScript to run.</p></noscript>
+  <SiteFooter />
+  <script>
+    import '../../hub/hub.js';
+  </script>
+</BaseLayout>

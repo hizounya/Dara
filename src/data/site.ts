@@ -9,6 +9,9 @@ export interface SiteEvent {
   link?: string;           // registration or details
 }
 
+// The community's WhatsApp group (supplied by the team, 28 Oct 2026). Change it here only.
+const COMMUNITY_URL = 'https://chat.whatsapp.com/K7fENvWtyzsCB1Cop4U4Ib?mode=gi_t';
+
 export const site = {
   name: 'Dara in Tech',
   tagline: 'A community for women to learn, connect, and grow in tech.',
@@ -16,7 +19,9 @@ export const site = {
   contactEmail: null as string | null,   // not confirmed yet
 
   hubUrl: '/hub/',
-  joinUrl: '/hub/',                       // becomes '/join' when that page exists (Phase 6)
+  // "Join our community" opens the WhatsApp group; the Member Hub (Talent Pool, roles, Mading) is a separate sign-up.
+  joinUrl: COMMUNITY_URL,
+  joinVia: 'WhatsApp',
 
   // In-page anchors until the About, Programs & Events and Partnerships pages exist (Phase 6),
   // so the navigation never leads to a missing page.
