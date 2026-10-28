@@ -39,16 +39,16 @@ const year = new Date().getFullYear();
   .ftr {
     padding-block: var(--space-6) var(--space-3);
     border-radius: var(--radius-frame) var(--radius-frame) 0 0;
-    /* Deep Plum in both themes (team choice, 28 Oct 2026): the transparent logo reads clearly without a plate,
-       where the pink parts disappear on the lilac→pink band. Lilac text on plum is about 13:1. */
-    background: var(--dit-plum); color: var(--dit-lilac);
+    /* Same tint as the page's alternating sections, so the footer reads as the last band of the page.
+       The plate-free logo stays legible (the lilac→pink band hid its pink lettering). */
+    background: var(--surface-soft); color: var(--text-headline);
   }
   .ftr__grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ftr__brand { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); max-width: 36ch; }
   .ftr__h { font: var(--weight-bold) var(--fs-small) / 1.3 var(--font-display); letter-spacing: .02em; color: inherit; margin-bottom: var(--space-1); }
   .ftr ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
   .ftr a { display: inline-flex; align-items: center; min-height: 36px; color: inherit; text-decoration: none; font-weight: var(--weight-medium); }
-  .ftr a:hover { color: var(--dit-rose); text-decoration: underline; }
+  .ftr a:hover { color: var(--link-hover); text-decoration: underline; }
   .ftr__base { margin-top: var(--space-5); padding-top: var(--space-2); border-top: 1px solid color-mix(in srgb, currentColor 25%, transparent); font-size: var(--fs-small); }
   @media (min-width: 960px) {
     .ftr__grid { grid-template-columns: 2fr 1fr 1fr 1fr; }
