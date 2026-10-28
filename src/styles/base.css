@@ -1,0 +1,47 @@
+/* Document defaults: reset, typography, links, focus. */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; color-scheme: light; }
+body {
+  margin: 0;
+  background: var(--page-bg);
+  color: var(--text-body);
+  font: var(--weight-regular) var(--fs-body) / var(--lh-body) var(--font-body);
+  letter-spacing: var(--tracking-body);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+img, svg { display: block; max-width: 100%; }
+img { height: auto; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  color: var(--text-headline);
+  letter-spacing: var(--tracking-display);
+  text-wrap: balance;
+}
+h1 { font-size: var(--fs-title); line-height: var(--lh-tight); }
+h2 { font-size: var(--fs-section); line-height: var(--lh-heading); }
+h3 { font-size: var(--fs-subhead); line-height: var(--lh-heading); font-weight: 600; letter-spacing: -.02em; }
+h4 { font-size: var(--fs-lead); line-height: var(--lh-heading); letter-spacing: -.01em; }
+p { margin: 0; }
+strong, b { font-weight: var(--weight-bold); color: var(--text-strong); }
+
+a { color: var(--link); text-underline-offset: .18em; text-decoration-thickness: 1.5px; transition: color var(--dur-fast) var(--ease-soft); }
+a:hover { color: var(--link-hover); }
+
+:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; border-radius: 6px; }
+::selection { background: var(--dit-lavender); color: var(--dit-plum); }
+
+.dit-visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.dit-container { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; scroll-behavior: auto !important; }
+}

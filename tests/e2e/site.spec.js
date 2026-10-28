@@ -1,6 +1,7 @@
 // Site-level checks: the homepage introduces the community (not the Hub), old sign-in links are
 // forwarded to /hub/, and a build without Supabase config never pretends to sign anyone in.
 import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 let siteUrl, unconfiguredUrl;
 test.beforeEach(async ({}, info) => {
@@ -41,4 +42,45 @@ test('unconfigured build: no demo data is written to the browser', async ({ page
   await expect(page.locator('[data-hub-unconfigured]')).toBeVisible();
   const keys = await page.evaluate(() => Object.keys(localStorage));
   expect(keys.filter(k => k.startsWith('dara_demo'))).toEqual([]);
+});
+
+test.describe('theme', () => {
+  test('light by default even when the OS prefers dark; choice carries over to the Hub', async ({ browser }) => {
+    const ctx = await browser.newContext({ colorScheme: 'dark' });
+    const page = await ctx.newPage();
+    await page.goto(siteUrl + '/');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(250, 248, 245)');
+    await page.click('[data-theme-toggle]');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await page.goto(siteUrl + '/hub/');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await ctx.close();
+  });
+});
+
+test.describe('accessibility (axe, WCAG 2 A/AA)', () => {
+  for (const path of ['/', '/styleguide']) {
+    for (const theme of ['light', 'dark']) {
+      test(`${path} has no violations in ${theme} mode`, async ({ page }) => {
+        await page.addInitScript(t => localStorage.setItem('dit-theme', t), theme);
+        await page.goto(siteUrl + path);
+        await page.evaluate(() => document.fonts.ready);
+        const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+        expect(violations.map(v => `${v.id}: ${v.nodes.map(n => n.target.join(' ')).join(', ')}`)).toEqual([]);
+      });
+    }
+  }
+});
+
+test.describe('responsive', () => {
+  for (const path of ['/', '/styleguide']) {
+    test(`${path} has no horizontal scroll at 390px`, async ({ browser }) => {
+      const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true });
+      const page = await ctx.newPage();
+      await page.goto(siteUrl + path);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+      await ctx.close();
+    });
+  }
 });

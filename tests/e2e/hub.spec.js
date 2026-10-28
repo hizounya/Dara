@@ -71,6 +71,26 @@ test.describe('document', () => {
   });
 });
 
+test.describe('theme', () => {
+  test('defaults to light even when the OS prefers dark, and the toggle persists', async ({ browser }) => {
+    test.fail(legacy, 'v1 follows the OS colour scheme and has no toggle');
+    const ctx = await browser.newContext({ colorScheme: 'dark' });
+    const page = await ctx.newPage();
+    await page.goto(hubUrl);
+    await page.waitForSelector('form[data-form="auth-email"]');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    const toggle = page.locator('[data-theme-toggle]');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await toggle.click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await page.reload();
+    await page.waitForSelector('form[data-form="auth-email"]');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(page.locator('[data-theme-toggle]')).toHaveAttribute('aria-pressed', 'true');
+    await ctx.close();
+  });
+});
+
 test.describe('sign in (demo)', () => {
   test('rejects a wrong code and accepts the demo code', async ({ page }) => {
     await page.goto(hubUrl);

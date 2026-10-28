@@ -1,0 +1,40 @@
+---
+// Dala, the Dara in Tech elephant. Official artwork only: never drawn, traced or generated.
+// Pick a pose directly, or a topic and let the design system's preferences choose (first available wins).
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+const files = import.meta.glob<{ default: ImageMetadata }>('../../assets/brand/mascot/dala-*.png', { eager: true });
+const art = (pose: string) => files[`../../assets/brand/mascot/dala-${pose}.png`]?.default;
+
+// From the design system (components/brand/Mascot.jsx): aliases and topic → pose preferences.
+const ALIASES: Record<string, string> = { think: 'read', confident: 'thumbs-up', tablet: 'thumbs-up', invite: 'excited', celebrate: 'trophy', love: 'comfort' };
+const TOPICS: Record<string, string[]> = {
+  welcome: ['wave', 'excited'], education: ['read', 'think', 'point'], news: ['announce', 'curious', 'tablet'],
+  career: ['thumbs-up', 'confident'], event: ['cheer', 'excited', 'announce'], achievement: ['trophy', 'celebrate'],
+  support: ['comfort', 'love'], cta: ['point', 'excited', 'wave'],
+};
+
+export type Pose = 'wave' | 'read' | 'announce' | 'thumbs-up' | 'cheer' | 'excited' | 'trophy' | 'comfort';
+export type Topic = keyof typeof TOPICS;
+
+interface Props { pose?: Pose; topic?: Topic; width?: number; alt?: string; eager?: boolean; class?: string; }
+const { pose, topic, width = 480, alt, eager = false, class: cls } = Astro.props;
+
+const wanted = pose ? [pose] : TOPICS[topic ?? 'welcome'];
+const chosen = wanted.map(p => ALIASES[p] ?? p).find(p => art(p)) ?? 'wave';
+if (!pose && chosen !== (ALIASES[wanted[0]] ?? wanted[0])) {
+  console.warn(`[Mascot] No official artwork for "${wanted[0]}" yet; using "${chosen}".`);
+}
+---
+<Picture
+  src={art(chosen)!}
+  formats={['avif', 'webp']}
+  width={width}
+  widths={[Math.round(width / 2), width, width * 2]}
+  sizes={`(max-width: 640px) 70vw, ${width}px`}
+  alt={alt ?? ''}
+  loading={eager ? 'eager' : 'lazy'}
+  class:list={['dit-mascot', cls]}
+  data-pose={chosen}
+/>

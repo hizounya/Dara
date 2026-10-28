@@ -1,0 +1,6 @@
+---
+// DS Tag: small category or date pill.
+interface Props { tone?: 'lilac' | 'blush' | 'pink' | 'plum'; }
+const { tone = 'lilac' } = Astro.props;
+---
+<span class:list={['dit-tag', tone !== 'lilac' && `dit-tag--${tone}`]}><slot /></span>

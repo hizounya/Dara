@@ -1,0 +1,17 @@
+---
+// DS FeatureRow: icon orb, gradient pin divider, title and optional description (carousel slide 4).
+import IconOrb from './IconOrb.astro';
+import type { IconName } from './Icon.astro';
+
+interface Props { icon: IconName; title: string; headingLevel?: 'h3' | 'h4'; }
+const { icon, title, headingLevel: H = 'h3' } = Astro.props;
+const hasText = Astro.slots.has('default');
+---
+<div class="dit-feature">
+  <IconOrb icon={icon} size={64} />
+  <span class="dit-feature__pin" aria-hidden="true"></span>
+  <div>
+    <H class="dit-feature__title">{title}</H>
+    {hasText && <p class="dit-feature__text"><slot /></p>}
+  </div>
+</div>

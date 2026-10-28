@@ -1,0 +1,10 @@
+---
+// DS IconOrb: a solid glyph in a pale lilac circle ("tint") or white on the lilac→pink orb ("gradient").
+import Icon, { type IconName } from './Icon.astro';
+
+interface Props { icon: IconName; variant?: 'tint' | 'gradient'; size?: number; }
+const { icon, variant = 'tint', size = 64 } = Astro.props;
+---
+<span class:list={['dit-orb', { 'dit-orb--gradient': variant === 'gradient' }]} style={`--orb-size:${size}px`}>
+  <Icon name={icon} />
+</span>

@@ -1,15 +1,57 @@
 ---
-// Scaffold placeholder (Phase 4, step 1). It proves the token and font pipeline works.
-// The real homepage replaces it in step 4.
+// Interim homepage (Phase 4, step 3): hero only, built from the shared components.
+// The full homepage with shared header and footer replaces it in step 4.
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Logo from '../components/brand/Logo.astro';
+import Mascot from '../components/brand/Mascot.astro';
+import GradientText from '../components/brand/GradientText.astro';
+import Decor from '../components/brand/Decor.astro';
+import Button from '../components/content/Button.astro';
+import ThemeToggle from '../components/layout/ThemeToggle.astro';
 ---
 <BaseLayout title="Dara in Tech" description="A community for women to learn, connect, and grow in tech.">
   <script is:inline slot="head">
     // Sign-in links emailed before the Hub moved to /hub/ return to the homepage; forward them with the token intact.
     if (/(^#|&)(access_token|error_description)=/.test(location.hash) || /[?&]code=/.test(location.search)) location.replace('/hub/' + location.search + location.hash);
   </script>
-  <main style="padding: var(--space-5) var(--space-2); background: var(--bg-page); color: var(--text-body); font-family: var(--font-body);">
-    <h1 style="font-family: var(--font-display); color: var(--text-headline); letter-spacing: var(--tracking-display); margin: 0;">Hi, we’re Dara in Tech</h1>
-    <p>A community for women to learn, connect, and grow in tech.</p>
+
+  <div class="dit-container top">
+    <a href="/" aria-label="Dara in Tech home"><Logo height={44} /></a>
+    <ThemeToggle />
+  </div>
+
+  <main class="hero">
+    <Decor variant="corner-top-right" width={420} class="hero__circuit" />
+    <Decor variant="skyline" width={520} class="hero__skyline" />
+    <div class="dit-container hero__in">
+      <div class="hero__copy">
+        <h1 class="dit-hero-title">Hi, we’re<br /><GradientText>Dara in Tech</GradientText></h1>
+        <p class="dit-lead hero__lead">A community for women to learn, connect, and grow in tech.</p>
+        <div class="hero__ctas">
+          <!-- Points to the Hub's sign-up until the /join page exists (Phase 6). -->
+          <Button href="/hub/" size="lg" arrow>Join our community</Button>
+          <Button href="/hub/" size="lg" variant="outline">Explore Talent Hub</Button>
+        </div>
+      </div>
+      <Mascot pose="wave" width={460} eager alt="Dala, the Dara in Tech elephant, waving hello" class="hero__dala" />
+    </div>
   </main>
 </BaseLayout>
+
+<style>
+  .top { display: flex; align-items: center; justify-content: space-between; min-height: var(--header-h); }
+  .hero { position: relative; overflow: hidden; padding-block: var(--space-5) 0; min-height: calc(100svh - var(--header-h)); }
+  .hero__in { position: relative; z-index: 1; display: grid; gap: var(--space-4); align-items: end; }
+  .hero__copy { display: flex; flex-direction: column; gap: var(--space-3); padding-bottom: var(--space-3); }
+  .hero__lead { font-size: var(--fs-subhead); max-width: 30ch; }
+  .hero__ctas { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-1); }
+  .hero :global(.hero__dala) { width: min(78vw, 460px); justify-self: end; margin-right: calc(var(--gutter) * -1); }
+  .hero :global(.hero__circuit) { top: 0; right: 0; width: min(55vw, 420px); }
+  /* Kept low and faint so it never sits behind the copy (DS: decor at edges only). */
+  .hero :global(.hero__skyline) { bottom: 0; left: 0; width: min(80vw, 360px); opacity: calc(var(--decor-opacity) * .7); }
+  @media (min-width: 960px) {
+    .hero__in { grid-template-columns: 1.15fr 1fr; align-items: center; }
+    .hero__copy { padding-bottom: var(--space-6); }
+    .hero :global(.hero__dala) { align-self: end; }
+  }
+</style>

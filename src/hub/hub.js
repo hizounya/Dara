@@ -67,8 +67,12 @@ const ICON={
  x:'<svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
  plus:'<svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
  search:'<svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
- ext:'<svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3H3v10h10v-3M9 3h4v4M13 3L7.5 8.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+ ext:'<svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3H3v10h10v-3M9 3h4v4M13 3L7.5 8.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ moon:'<svg class="ic i-moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.6 10.3A6 6 0 0 1 5.7 2.4a6 6 0 1 0 7.9 7.9z" fill="currentColor"/></svg>',
+ sun:'<svg class="ic i-sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="currentColor"/><path d="M8 .8v2.1M8 13.1v2.1M.8 8h2.1M13.1 8h2.1M2.9 2.9l1.5 1.5M11.6 11.6l1.5 1.5M2.9 13.1l1.5-1.5M11.6 4.4l1.5-1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'
 };
+/* Light/dark switch. Clicks are handled by the shared theme script (ThemeInit), not by this file. */
+const themeBtn=()=>'<button type="button" class="btn ghost sm theme-btn" data-theme-toggle aria-pressed="'+(window.ditTheme&&window.ditTheme.get()==='dark')+'" aria-label="Dark mode" title="Light / dark mode">'+ICON.moon+ICON.sun+'</button>';
 const CIRCUIT='<svg class="circuit" viewBox="0 0 240 150" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle class="c" cx="14" cy="38" r="5"/><path class="l" d="M19 38H70L90 20H240"/><circle class="c" cx="78" cy="112" r="5"/><path class="l" d="M78 107V76L100 56H240"/><path class="l" d="M130 130V98L146 86H240"/></svg>';
 
 /* ================= match engine ================= */
@@ -341,7 +345,7 @@ function scoreHTML(total,small){const b=band(total);return '<div class="mscore m
 function shell(inner,withTabs){
   const tabs=withTabs?[['home','Home'],['mading','Mading'],['pool','Talent Pool'],['postings','My Postings'],['profile','Profile']].concat(S.admin?[['admin','Admin']]:[]):[];
   return '<header class="top"><div class="top-in"><a class="brand" href="#" data-act="nav" data-v="home" aria-label="Dara in Tech home"><img class="logo-img" src="'+IMG.logo+'" alt="Dara in Tech"><span class="brand-tag">Talent Hub</span></a>'+(DEMO?'<span class="demo-chip">Demo</span>':'')+
-   '<div class="acct"><span class="who">'+esc(first(S.me&&S.me.full_name)||S.user.email)+'</span><button class="btn ghost sm" data-act="signout">Sign out</button></div>'+
+   '<div class="acct"><span class="who">'+esc(first(S.me&&S.me.full_name)||S.user.email)+'</span>'+themeBtn()+'<button class="btn ghost sm" data-act="signout">Sign out</button></div>'+
    (withTabs?'<nav class="tabs" aria-label="Main">'+tabs.map(t=>'<button class="tab" data-act="nav" data-v="'+t[0]+'"'+(S.view===t[0]?' aria-current="page"':'')+'>'+t[1]+'</button>').join('')+'</nav>':'')+
    '</div></header><main class="wrap" id="main">'+inner+'</main><footer class="foot"><div class="foot-in"><a href="https://www.instagram.com/daraintech.id/" target="_blank" rel="noopener noreferrer">@daraintech.id</a><span>Members you see here chose to share their profile with the community.</span></div></footer>';
 }
@@ -355,7 +359,7 @@ function authHTML(){
    '<form class="login" data-form="auth-code" novalidate><h2>Check your email</h2><p class="muted">We sent a code to <b class="sel">'+esc(S.authEmail)+'</b>. You can also tap the link in that email.</p>'+
    field('a-code','6-digit code','<input class="input mono" id="a-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456">')+
    '<p class="err" role="alert">'+esc(S.authErr)+'</p><div class="btn-row"><button class="btn" type="submit"'+(S.busy?' disabled':'')+'>'+(S.busy?'Checking…':'Sign in')+'</button><button class="btn ghost" type="button" data-act="back-email">Use another email</button></div></form>';
-  return '<div class="auth">'+CIRCUIT+'<section><div class="auth-brand"><img class="logo-img" src="'+IMG.logo+'" alt="Dara in Tech"></div><p class="eyebrow">~/talent-hub</p><h1>Find your people, then your <span class="grad">next role</span>.</h1><p class="lede">A hub for women in Jakarta moving into tech. Keep one profile, see roles that members post, and know how well each one fits you before you apply.</p>'+
+  return '<div class="auth">'+CIRCUIT+'<section><div class="auth-brand" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><img class="logo-img" src="'+IMG.logo+'" alt="Dara in Tech">'+themeBtn()+'</div><p class="eyebrow">~/talent-hub</p><h1>Find your people, then your <span class="grad">next role</span>.</h1><p class="lede">A hub for women in Jakarta moving into tech. Keep one profile, see roles that members post, and know how well each one fits you before you apply.</p>'+
    '<ol class="log"><li><code>join</code><b>One profile for the community</b><span>Your details are shared with other members only if you opt in.</span></li><li><code>post</code><b>Members post roles they are hiring for</b><span>Internships, full-time jobs and freelance work from people in the community.</span></li><li><code>match</code><b>A score for every role</b><span>Skills, field, level, work setup and job type, with the reasons shown.</span></li></ol></section>'+
    '<div class="auth-side">'+dalaImg('dala','Dala, the Dara in Tech elephant')+'<section class="card">'+(DEMO?'<p class="demo-note">Demo mode: data stays in this browser. Use any email and the code <b class="mono">123456</b>. An email starting with <b>admin</b> opens the admin panel.</p><div style="height:14px"></div>':'')+form+'</section></div></div>';
 }

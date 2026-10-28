@@ -1,21 +1,25 @@
 ---
-// Document shell for every page: doctype, language, charset, viewport and SEO basics.
+// Document shell for every page: doctype, language, charset, viewport, SEO basics and the theme bootstrap.
 import '../styles/site.css';
+import ThemeInit from '../components/layout/ThemeInit.astro';
 
 interface Props {
   title: string;
   description: string;
+  noindex?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, noindex = false } = Astro.props;
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <ThemeInit />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
     <slot name="head" />
   </head>
   <body>

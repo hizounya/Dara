@@ -1,0 +1,17 @@
+---
+// Official Dara in Tech logo, used exactly as supplied (no recolouring or redrawing).
+// In dark mode it sits on a small white plate so the violet lettering keeps its contrast.
+import { Image } from 'astro:assets';
+import logo from '../../assets/brand/dara-in-tech-logo.png';
+
+interface Props { height?: number; alt?: string; }
+const { height = 44, alt = 'Dara in Tech' } = Astro.props;
+---
+<span class="dit-logo">
+  <Image src={logo} alt={alt} height={height} densities={[1, 2]} format="webp" loading="eager" />
+</span>
+<style>
+  .dit-logo { display: inline-flex; border-radius: 12px; }
+  .dit-logo :global(img) { width: auto; }
+  :global(:root[data-theme="dark"]) .dit-logo { background: var(--dit-white); padding: 4px 8px; }
+</style>
