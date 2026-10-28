@@ -1,6 +1,6 @@
 ---
 // Official Dara in Tech logo, used exactly as supplied (no recolouring or redrawing).
-// In dark mode it sits on a small white plate so the violet lettering keeps its contrast.
+// Transparent PNG, shown without any plate or background (team decision, 28 Oct 2026).
 import { Image } from 'astro:assets';
 import logo from '../../assets/brand/dara-in-tech-logo.png';
 
@@ -13,5 +13,4 @@ const { height = 44, alt = 'Dara in Tech' } = Astro.props;
 <style>
   .dit-logo { display: inline-flex; border-radius: 12px; }
   .dit-logo :global(img) { width: auto; }
-  :global(:root[data-theme="dark"]) .dit-logo { background: var(--dit-white); padding: 4px 8px; }
 </style>

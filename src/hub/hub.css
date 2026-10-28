@@ -16,7 +16,6 @@ body.lock { overflow: hidden; }
 
 /* ---------- Header (shared .dit-hdr) + Hub additions ---------- */
 .hub-logo img { display: block; height: 40px; width: auto; border-radius: 10px; }
-:root[data-theme="dark"] .hub-logo img { background: var(--dit-white); padding: 3px 7px; height: 40px; }
 .hub-badge {
   display: inline-flex; align-items: center; padding: 4px 12px; border-radius: var(--radius-pill);
   background: var(--surface-soft); color: var(--text-headline); font: var(--weight-bold) var(--fs-label) / 1.2 var(--font-display);
