@@ -1,0 +1,32 @@
+---
+// Member Hub (Talent Hub v1, moved here unchanged in Phase 4, step 2).
+// It keeps its own v1 stylesheet and fonts until the Phase 5 redesign, so it does not load site.css.
+import { getImage } from 'astro:assets';
+import logoSrc from '../../assets/brand/dara-in-tech-logo.png';
+import dalaSrc from '../../assets/brand/dala-waving-laptop.png';
+import '../../hub/legacy.css';
+
+const logo = await getImage({ src: logoSrc, width: 240, format: 'webp' });
+const dala = await getImage({ src: dalaSrc, width: 480, format: 'webp' });
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Member Hub · Dara in Tech</title>
+    <meta name="description" content="Sign in to the Dara in Tech Member Hub: your profile, the Talent Pool, roles from the community, and the Mading board." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=JetBrains+Mono:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" />
+  </head>
+  <body>
+    <div id="app" data-logo={logo.src} data-dala={dala.src}><p style="padding:40px 16px;text-align:center;color:var(--muted)">Loading Dara in Tech…</p></div>
+    <div id="modal-root"></div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <noscript><p style="padding:0 16px;text-align:center">The Member Hub needs JavaScript to run.</p></noscript>
+    <script>
+      import '../../hub/hub.js';
+    </script>
+  </body>
+</html>

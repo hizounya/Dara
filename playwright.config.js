@@ -6,6 +6,18 @@ import { pathToFileURL } from 'node:url';
 // LEGACY_HUB overrides the path (used once to test v1 at its original location).
 const legacyHub = pathToFileURL(resolve(process.env.LEGACY_HUB || 'legacy/talent-hub-v1/index.html')).href;
 
+// Two builds of the new site, each with its environment pinned so a local .env cannot leak in:
+// "demo" (PUBLIC_DEMO_MODE=true) and "unconfigured" (no Supabase values, demo off), which must fail closed.
+const DEMO_PORT = 4322;
+const UNCONFIGURED_PORT = 4323;
+const build = (name, port, env) => ({
+  command: `npx astro build --outDir .test-builds/${name} && node tests/static-server.mjs .test-builds/${name} ${port}`,
+  url: `http://127.0.0.1:${port}/`,
+  env: { PUBLIC_SUPABASE_URL: '', PUBLIC_SUPABASE_ANON_KEY: '', PUBLIC_GOOGLE_LOGIN: 'false', ...env },
+  reuseExistingServer: false,
+  timeout: 120_000,
+});
+
 export default defineConfig({
   testDir: 'tests/e2e',
   reporter: [['list']],
@@ -15,7 +27,13 @@ export default defineConfig({
     channel: 'chrome',
     headless: true,
   },
+  webServer: [
+    build('demo', DEMO_PORT, { PUBLIC_DEMO_MODE: 'true' }),
+    build('unconfigured', UNCONFIGURED_PORT, { PUBLIC_DEMO_MODE: 'false' }),
+  ],
   projects: [
     { name: 'hub-legacy', testMatch: 'hub.spec.js', metadata: { hubUrl: legacyHub, legacy: true } },
+    { name: 'hub', testMatch: 'hub.spec.js', metadata: { hubUrl: `http://127.0.0.1:${DEMO_PORT}/hub/`, legacy: false } },
+    { name: 'site', testMatch: 'site.spec.js', metadata: { siteUrl: `http://127.0.0.1:${DEMO_PORT}`, unconfiguredUrl: `http://127.0.0.1:${UNCONFIGURED_PORT}` } },
   ],
 });

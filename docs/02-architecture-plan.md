@@ -236,7 +236,8 @@ Account deletion (an Edge Function using the service role server-side) and colum
 
 | Suite | Tooling | Runs against |
 | --- | --- | --- |
-| `tests/e2e/hub.spec.ts` (the Phase 1 smoke checks, extended) | `@playwright/test` with the **system Chrome** channel (no browser download) | **Before:** `legacy/talent-hub-v1/index.html`. **After:** `/hub/` on `astro preview` in demo mode. Same spec, `BASE_URL` switch. |
+| `tests/e2e/hub.spec.js` (the Phase 1 smoke checks, extended) | `@playwright/test` with the **system Chrome** channel (no browser download) | **Before:** `legacy/talent-hub-v1/index.html` (project `hub-legacy`). **After:** `/hub/` on a demo build (project `hub`). Same spec. Builds are served by `tests/static-server.mjs`, because Astro 7's `preview` can detach into the background. |
+| `tests/e2e/site.spec.js` (Phase 4) | Playwright | Homepage is not the Hub · old sign-in links forwarded to `/hub/` · a build with no Supabase config fails closed and writes no demo data |
 | `tests/e2e/site.spec.ts` | Playwright + `@axe-core/playwright` | Every public page: renders, nav works, no console errors, no horizontal scroll at 390 px, no serious or critical axe violations |
 | `tests/unit/match.test.js` (Phase 5) | `node:test` (built in) | Extracted match engine |
 | Supabase-backed flows | Same e2e suite with `.env.staging` | Staging project only, once you create one |

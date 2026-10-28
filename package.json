@@ -10,6 +10,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "test": "playwright test",
     "test:hub:legacy": "playwright test --project=hub-legacy"
   },
   "dependencies": {

@@ -4,8 +4,9 @@
 >
 > - The original single-file Talent Hub is preserved unchanged in [`legacy/talent-hub-v1/`](legacy/talent-hub-v1/). The Indonesian guide below describes that version. Its `index.html` now lives in that folder.
 > - Plans and audit: [`docs/`](docs/).
-> - Develop: Node 22+, `npm install`, `npm run dev` (copy `.env.example` to `.env` first).
-> - Hub regression tests (uses your installed Google Chrome): `npm run test:hub:legacy`.
+> - Develop: Node 22+, `npm install`, copy `.env.example` to `.env`, then `npm run dev`. The site is at `/` and the Member Hub at `/hub/`. For the Hub without Supabase, set `PUBLIC_DEMO_MODE=true` in `.env` (local only, never in production).
+> - Tests (use your installed Google Chrome): `npm test` runs the Hub suite against both v1 and `/hub/`, plus site checks.
+> - Database changes are proposed as files in [`supabase/migrations/`](supabase/migrations/) and are **not** applied automatically.
 
 # Dara in Tech Talent Hub (v1)
 
