@@ -10,7 +10,9 @@ import svgStar from '../assets/icons/star.svg?raw';
    Demo mode runs ONLY when PUBLIC_DEMO_MODE=true. Missing Supabase values never fall back to the demo:
    the Hub shows a configuration error instead (see boot). */
 const CONFIG={SUPABASE_URL:import.meta.env.PUBLIC_SUPABASE_URL||'',SUPABASE_ANON_KEY:import.meta.env.PUBLIC_SUPABASE_ANON_KEY||'',GOOGLE_LOGIN:import.meta.env.PUBLIC_GOOGLE_LOGIN==='true'};
-const DEMO=import.meta.env.PUBLIC_DEMO_MODE==='true';
+const DEMO_BUILD=import.meta.env.PUBLIC_DEMO_MODE==='true';
+/* Demo runs only on a local machine. A demo build served from anywhere else behaves as unconfigured. */
+const DEMO=DEMO_BUILD&&/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
 const CONFIGURED=!!(CONFIG.SUPABASE_URL&&CONFIG.SUPABASE_ANON_KEY);
 
 /* Brand images (logo and Dala). URLs of the build-optimised files, passed in by src/pages/hub/index.astro. */
@@ -62,8 +64,25 @@ const safeUrl=u=>{u=String(u||'').trim();if(!u)return '';if(!/^https?:\/\//i.tes
 const isEmail=s=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 const isOpen=j=>j.is_open!==false&&!(j.deadline&&new Date(j.deadline+'T23:59:59')<new Date());
 const isPast=d=>!!d&&new Date(d+'T23:59:59')<new Date();
+/* Roles are approved by an admin before their poster can download shared CVs (migration B).
+   Before that migration the field does not exist, and every role counts as approved. */
+const isApproved=j=>!('approved_at' in j)||!!j.approved_at;
 const fmtSize=n=>n>=1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB';
 const fileExt=n=>String(n||'').split('.').pop().toLowerCase();
+/* CV files must live at <owner id>/cv-<timestamp>.pdf|docx; anything else is not treated as that member's CV. */
+const CV_PATH_RE=/^[0-9A-Za-z_-]+\/cv-[0-9]+\.(pdf|docx)$/;
+const ownsCV=m=>!!(m&&m.cv_path&&CV_PATH_RE.test(m.cv_path)&&m.cv_path.split('/')[0]===String(m.id));
+/* Real file type from the first bytes (not the name or the declared type): PDF "%PDF-", DOCX is a ZIP "PK\x03\x04". */
+async function sniffCV(blob){
+  const b=new Uint8Array(await blob.slice(0,5).arrayBuffer());
+  if(b[0]===0x25&&b[1]===0x50&&b[2]===0x44&&b[3]===0x46&&b[4]===0x2d)return 'pdf';
+  if(b[0]===0x50&&b[1]===0x4b&&b[2]===0x03&&b[3]===0x04)return 'docx';
+  return null;
+}
+const CV_MIME={pdf:'application/pdf',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'};
+/* Download names are built here, never taken from the stored file name. */
+const cvFileName=(m,ext)=>(String(m.full_name||'member').normalize('NFKD').replace(/[^A-Za-z0-9 _-]/g,'').trim().replace(/\s+/g,'_').slice(0,60)||'member')+'_CV.'+ext;
+const linkedinUrl=u=>{u=safeUrl(u);if(!u)return '';try{const h=new URL(u).hostname.toLowerCase();return h==='linkedin.com'||h.endsWith('.linkedin.com')?u:''}catch(e){return ''}};
 
 const mem={};
 const store={
@@ -109,6 +128,7 @@ function sameCity(a,b){
   return a.includes(b)||b.includes(a);
 }
 function matchScore(m,j){
+  m=m||{}; /* e.g. an admin without a profile opening a role */
   const ms=new Set((m.skills||[]).map(nk));
   const req=j.req_skills||[],nice=j.nice_skills||[];
   const reqHit=req.filter(s=>ms.has(nk(s))),reqMiss=req.filter(s=>!ms.has(nk(s)));
@@ -152,122 +172,19 @@ function completeness(m){
   return {pct:Math.round(100*checks.filter(c=>c[0]).length/checks.length),tips:checks.filter(c=>!c[0]).map(c=>c[1])};
 }
 
-/* ================= demo backend ================= */
-function seedDemo(){
-  const ago=n=>new Date(Date.now()-n*864e5).toISOString();
-  const inD=n=>new Date(Date.now()+n*864e5).toISOString().slice(0,10);
-  const mk=(id,o)=>Object.assign({id,email:id+'@example.com',linkedin:'',institution:'',bio:'',in_pool:true,demo:true},o);
-  const members=[
-   mk('demo_m1',{full_name:'Nadia Putri',city:'Jakarta',status:'career_switcher',headline:'Accountant moving into data analysis',level:'entry',skills:['SQL','Excel','Power BI','Python'],interests:['Data & Analytics'],job_types:['full_time'],work_modes:['hybrid','remote'],bio:'Six years in finance, now building a data portfolio.',created_at:ago(12)}),
-   mk('demo_m2',{full_name:'Salsa Amelia',city:'Jakarta',status:'fresh_grad',headline:'Informatics graduate, frontend focus',level:'junior',skills:['JavaScript','React','Node.js','Git','HTML/CSS','PostgreSQL'],interests:['Software Engineering'],job_types:['full_time','internship'],work_modes:['remote','hybrid'],created_at:ago(10)}),
-   mk('demo_m3',{full_name:'Rara Wulandari',city:'Bandung',status:'professional',headline:'Marketing executive exploring product',level:'junior',skills:['Product Management','Agile','Jira','User Research','Excel'],interests:['Product & Project','Data & Analytics'],job_types:['full_time'],work_modes:['hybrid','onsite'],created_at:ago(8)}),
-   mk('demo_m4',{full_name:'Tiara Maharani',city:'Jakarta',status:'student',headline:'Visual communication design student',level:'intern',skills:['Figma','UI/UX Design','Prototyping','User Research'],interests:['UI/UX Design'],job_types:['internship','part_time'],work_modes:['remote','hybrid'],created_at:ago(6)}),
-   mk('demo_m5',{full_name:'Dewi Anggraini',city:'Tangerang',status:'career_switcher',headline:'Former teacher learning QA',level:'entry',skills:['Manual Testing','Jira','SQL','Postman'],interests:['QA & Security','Software Engineering'],job_types:['full_time','contract'],work_modes:['remote'],created_at:ago(3)})
-  ];
-  [[0,'Nadia_Putri_CV.pdf',182000,true],[1,'Salsa_Amelia_CV.pdf',164000,true],[2,'Rara_Wulandari_CV.pdf',171000,false]].forEach(c=>{Object.assign(members[c[0]],{cv_path:'demo',cv_name:c[1],cv_size:c[2],cv_shared:c[3]})});
-  const jb=(id,by,o)=>Object.assign({id,posted_by:by,description:'',apply_link:'',contact_email:'talent@example.com',is_open:true,demo:true},o);
-  const jobs=[
-   jb('demo_j1','demo_m2',{title:'Junior Data Analyst',company:'Northwind Labs',category:'Data & Analytics',level:'junior',job_type:'full_time',work_mode:'hybrid',location:'Jakarta',req_skills:['SQL','Excel','Power BI'],nice_skills:['Python','Statistics'],description:'Build weekly dashboards for the operations team and answer ad hoc questions with SQL.\nYou will work with two senior analysts.',deadline:inD(21),created_at:ago(2)}),
-   jb('demo_j2','demo_m1',{title:'Frontend Developer Intern',company:'Orbit Commerce',category:'Software Engineering',level:'intern',job_type:'internship',work_mode:'remote',location:'Indonesia',req_skills:['JavaScript','React','Git'],nice_skills:['HTML/CSS','TypeScript'],description:'Ship small features on our storefront with a mentor. Three-month program with a possible full-time offer.',deadline:inD(14),created_at:ago(4)}),
-   jb('demo_j3','demo_m3',{title:'Associate Product Manager',company:'Kopi Data',category:'Product & Project',level:'junior',job_type:'full_time',work_mode:'onsite',location:'Jakarta',req_skills:['Product Management','Agile','User Research'],nice_skills:['Jira','SQL'],description:'Own discovery and delivery for the loyalty app together with design and engineering.',deadline:inD(30),created_at:ago(5)}),
-   jb('demo_j4','demo_m5',{title:'UI/UX Design Intern',company:'Lumen Studio',category:'UI/UX Design',level:'intern',job_type:'internship',work_mode:'hybrid',location:'Jakarta',req_skills:['Figma','UI/UX Design'],nice_skills:['Prototyping','User Research'],description:'Support the design team on client projects: wireframes, prototypes and user interviews.',deadline:inD(10),created_at:ago(7)}),
-   jb('demo_j5','demo_m4',{title:'QA Engineer',company:'Northwind Labs',category:'QA & Security',level:'entry',job_type:'full_time',work_mode:'remote',location:'Indonesia',req_skills:['Manual Testing','Jira'],nice_skills:['SQL','Postman'],description:'Write test cases, run regression cycles and report bugs for our web platform.',deadline:inD(25),created_at:ago(9)})
-  ];
-  const pk=(id,by,o)=>Object.assign({id,posted_by:by,organizer:'',description:'',link:'',event_date:null,location:'',pinned:false,demo:true},o);
-  const posts=[
-   pk('demo_p1','demo_m3',{kind:'event',title:'Dara Socials: Meet Your People',organizer:'Dara in Tech',description:'Our first networking night. Meet other women moving into tech, swap stories and make friends before you swap CVs.\nSpeakers and venue details will be shared in the group.',event_date:'2026-11-21',location:'Jakarta',pinned:true,created_at:ago(1)}),
-   pk('demo_p2','demo_m1',{kind:'cert',title:'AZ-900 exam prep group',organizer:'Study group by members',description:'Six weekly sessions to prepare for the Azure Fundamentals exam together. We share notes and practice questions. Beginners welcome.',event_date:inD(12),created_at:ago(3)}),
-   pk('demo_p3','demo_m2',{kind:'program',title:'Open call: junior mentoring program',organizer:'Example Tech Foundation',description:'Twelve weeks of 1:1 mentoring with an engineer or designer. Open to women with up to two years of experience.',event_date:inD(20),created_at:ago(6)}),
-   pk('demo_p4','demo_m4',{kind:'tip',title:'How I wrote my first data portfolio project',description:'Pick one question you care about, find a public dataset and write down every decision you make. Recruiters read the thinking more than the chart.',created_at:ago(8)})
-  ];
-  return {members,jobs,posts};
-}
-function demoPdf(m){
-  const t=s=>String(s||'').replace(/[^\x20-\x7e]/g,'').replace(/[\\()]/g,'\\$&');
-  const stream='BT /F1 20 Tf 72 740 Td ('+t(m.full_name||'Member')+') Tj /F1 12 Tf 0 -28 Td (Example CV, demo data only) Tj 0 -18 Td (Real members upload their own file here.) Tj ET';
-  const objs=['<< /Type /Catalog /Pages 2 0 R >>','<< /Type /Pages /Kids [3 0 R] /Count 1 >>','<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>','<< /Length '+stream.length+' >>\nstream\n'+stream+'\nendstream','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'];
-  let out='%PDF-1.4\n';const off=[];
-  objs.forEach((o,i)=>{off.push(out.length);out+=(i+1)+' 0 obj\n'+o+'\nendobj\n'});
-  const x=out.length;
-  out+='xref\n0 '+(objs.length+1)+'\n0000000000 65535 f \n'+off.map(o=>String(o).padStart(10,'0')+' 00000 n \n').join('')+'trailer\n<< /Size '+(objs.length+1)+' /Root 1 0 R >>\nstartxref\n'+x+'\n%%EOF';
-  return new Blob([out],{type:'application/pdf'});
-}
-const DemoAPI=(()=>{
-  const KEY='dara_demo_db_v1',SKEY='dara_demo_session_v1';
-  let cur=null;
-  const load=()=>{let d=store.get(KEY,null);if(!d){d=seedDemo();store.set(KEY,d)}else if(!d.posts){d.posts=seedDemo().posts;store.set(KEY,d)}return d};
-  const save=d=>store.set(KEY,d);
-  const isAdm=u=>!!u&&/^admin/i.test(u.email);
-  return {
-   async init(){},
-   async session(){cur=store.get(SKEY,null);return cur},
-   async sendCode(){},
-   async verify(email,code){
-     if(String(code).trim()!=='123456')throw new Error('That code is not right. In demo mode the code is 123456.');
-     cur={id:'u_'+email.toLowerCase().replace(/[^a-z0-9]/g,'_'),email:email.toLowerCase()};
-     store.set(SKEY,cur);return cur;
-   },
-   async google(){throw new Error('Google sign-in needs the live setup.')},
-   async signOut(){cur=null;store.set(SKEY,null)},
-   async isAdmin(u){return isAdm(u)},
-   async getMe(id){return load().members.find(m=>m.id===id)||null},
-   async saveMe(row){
-     const d=load(),i=d.members.findIndex(m=>m.id===row.id);
-     if(i>=0)d.members[i]=Object.assign({},d.members[i],row);else d.members.push(Object.assign({},row,{created_at:new Date().toISOString()}));
-     save(d);return d.members.find(m=>m.id===row.id);
-   },
-   async deleteMe(id){const d=load();d.members=d.members.filter(m=>m.id!==id);save(d)},
-   async deleteMember(id){const d=load();d.members=d.members.filter(m=>m.id!==id);save(d)},
-   async listMembers(){
-     const d=load();
-     return d.members.filter(m=>isAdm(cur)||m.in_pool||(cur&&m.id===cur.id)).slice().sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
-   },
-   async listJobs(){return load().jobs.slice().sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)))},
-   async saveJob(job){
-     const d=load();
-     if(job.id){const i=d.jobs.findIndex(j=>j.id===job.id);if(i>=0)d.jobs[i]=Object.assign({},d.jobs[i],job)}
-     else d.jobs.push(Object.assign({},job,{id:'j_'+uid8(),posted_by:cur.id,is_open:true,created_at:new Date().toISOString()}));
-     save(d);
-   },
-   async deleteJob(id){const d=load();d.jobs=d.jobs.filter(j=>j.id!==id);save(d)},
-   async resetDemo(){save(seedDemo())},
-   async listPosts(){return load().posts.slice().sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)))},
-   async savePost(p){
-     const d=load();
-     if(p.id){const i=d.posts.findIndex(x=>x.id===p.id);if(i>=0)d.posts[i]=Object.assign({},d.posts[i],p)}
-     else d.posts.push(Object.assign({},p,{id:'p_'+uid8(),posted_by:cur.id,pinned:!!p.pinned&&isAdm(cur),created_at:new Date().toISOString()}));
-     save(d);
-   },
-   async deletePost(id){const d=load();d.posts=d.posts.filter(p=>p.id!==id);save(d)},
-   async setPinned(id,v){const d=load();const p=d.posts.find(x=>x.id===id);if(p){p.pinned=!!v;save(d)}},
-   async uploadCV(userId,file){
-     const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error('Could not read that file.'));r.readAsDataURL(file)});
-     store.set('dara_demo_cv_'+userId,{data});
-     return {cv_path:'demo',cv_name:file.name,cv_size:file.size};
-   },
-   async removeCV(m){if(m&&m.id)store.set('dara_demo_cv_'+m.id,null)},
-   async getCV(m){
-     const c=store.get('dara_demo_cv_'+m.id,null);
-     if(c&&c.data){
-       const mime=(c.data.match(/^data:([^;,]+)/)||[])[1]||'application/octet-stream';
-       const bin=atob(c.data.split(',')[1]||'');const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
-       return new Blob([u],{type:mime});
-     }
-     return demoPdf(m);
-   }
-  };
-})();
-
 /* ================= Supabase backend ================= */
 const SbAPI=(()=>{
   let sb=null;
   const must=r=>{if(r.error)throw new Error(r.error.message||'Something went wrong. Try again.');return r.data};
-  const loadScript=src=>new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('Could not load the sign-in library. Check your connection.'));document.head.appendChild(s)});
+  const membersOrder=q=>q.order('created_at',{ascending:false});
   return {
    async init(){
-     await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js');
-     sb=window.supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY,{auth:{persistSession:true,detectSessionInUrl:true}});
+     /* Bundled from npm (pinned) instead of a third-party CDN, so the site can run a strict Content Security Policy. */
+     let lib;try{lib=await import('@supabase/supabase-js')}catch(e){throw new Error('Could not load the sign-in library. Check your connection.')}
+     sb=lib.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY,{auth:{persistSession:true,detectSessionInUrl:true}});
    },
+   /* Sign-out in another tab (or an expired session) ends this one too. */
+   onSignedOut(cb){sb.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_OUT')cb()})},
    async session(){const r=await sb.auth.getSession();const s=r.data&&r.data.session;return s?{id:s.user.id,email:s.user.email}:null},
    async sendCode(email){must(await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}}))},
    async verify(email,code){
@@ -283,13 +200,21 @@ const SbAPI=(()=>{
    async saveMe(row){return must(await sb.from('members').upsert(row).select().single())},
    async deleteMe(id){must(await sb.from('members').delete().eq('id',id))},
    async deleteMember(id){must(await sb.from('members').delete().eq('id',id))},
-   async listMembers(){return must(await sb.from('members').select('*').order('created_at',{ascending:false}))||[]},
+   async listMembers(isAdmin){
+     if(isAdmin)return must(await membersOrder(sb.from('members').select('*')))||[];
+     /* Members read others through the pool_members view (consented columns only, migration 02).
+        Until that migration is applied the view does not exist, so fall back to the table. */
+     const v=await membersOrder(sb.from('pool_members').select('*'));
+     if(!v.error)return v.data||[];
+     return must(await membersOrder(sb.from('members').select('*')))||[];
+   },
    async listJobs(){return must(await sb.from('jobs').select('*').order('created_at',{ascending:false}))||[]},
    async saveJob(job){
      if(job.id){const id=job.id;const rest=Object.assign({},job);delete rest.id;must(await sb.from('jobs').update(rest).eq('id',id))}
      else must(await sb.from('jobs').insert(job));
    },
    async deleteJob(id){must(await sb.from('jobs').delete().eq('id',id))},
+   async approveJob(id){must(await sb.from('jobs').update({approved_at:new Date().toISOString()}).eq('id',id))},
    async resetDemo(){},
    async listPosts(){return must(await sb.from('posts').select('*').order('created_at',{ascending:false}))||[]},
    async savePost(p){
@@ -298,14 +223,21 @@ const SbAPI=(()=>{
    },
    async deletePost(id){must(await sb.from('posts').delete().eq('id',id))},
    async setPinned(id,v){must(await sb.from('posts').update({pinned:!!v}).eq('id',id))},
-   async uploadCV(userId,file){
-     const ext=fileExt(file.name);
+   async uploadCV(userId,file,kind){
+     const ext=kind;
      const path=userId+'/cv-'+Date.now()+'.'+ext;
      const r=await sb.storage.from('cvs').upload(path,file,{contentType:file.type||(ext==='pdf'?'application/pdf':'application/vnd.openxmlformats-officedocument.wordprocessingml.document'),upsert:false});
      if(r.error)throw new Error(r.error.message||'Could not upload the CV.');
      return {cv_path:path,cv_name:file.name,cv_size:file.size};
    },
-   async removeCV(m){if(m&&m.cv_path&&m.cv_path!=='demo'){await sb.storage.from('cvs').remove([m.cv_path])}},
+   /* Only ever removes a file inside the member's own folder (a cv_path pointing elsewhere is ignored). */
+   async removeCV(m){if(!ownsCV(m))return;const r=await sb.storage.from('cvs').remove([m.cv_path]);if(r.error)throw new Error(r.error.message||'Could not remove the CV file.')},
+   /* Erasure: every file in the member's folder, including older CVs. */
+   async purgeCVs(uid){
+     const l=await sb.storage.from('cvs').list(uid,{limit:100});if(l.error)throw new Error(l.error.message||'Could not list CV files.');
+     const names=(l.data||[]).map(o=>uid+'/'+o.name);
+     if(names.length){const r=await sb.storage.from('cvs').remove(names);if(r.error)throw new Error(r.error.message||'Could not remove CV files.')}
+   },
    async getCV(m){
      const r=await sb.storage.from('cvs').download(m.cv_path);
      if(r.error)throw new Error(r.error.message||'Could not download that CV.');
@@ -313,7 +245,7 @@ const SbAPI=(()=>{
    }
   };
 })();
-const API=DEMO?DemoAPI:SbAPI;
+let API=SbAPI; /* replaced by the demo backend in boot() when DEMO */
 
 /* ================= state ================= */
 const S={user:null,admin:false,me:null,members:[],jobs:[],posts:[],mad:'all',openPost:null,cvPending:null,cvRemove:false,cvShare:null,view:'home',tab:'roles',openJob:null,ready:false,authStep:'email',authEmail:'',authErr:'',busy:false,
@@ -427,7 +359,7 @@ function profileFormHTML(onb){
    sec('fs-skills','Your skills','Matches get sharper with 4 or more skills. Pick suggestions or type your own and press Enter.',pickerHTML('skills',m.skills||[],sk,'Type a skill and press Enter'))+
    sec('fs-cv','CV (optional)','PDF or DOCX, up to 2 MB. Private unless you choose to share it.','<div id="cv-box">'+cvBoxHTML()+'</div>')+
    sec('fs-privacy','Privacy','You can change these at any time.',
-     '<label class="dit-check hub-pool"><input type="checkbox" id="f-pool"'+(m.in_pool===true?' checked':'')+'><span><b>Show me in the Talent Pool</b><span class="dit-hint">Off unless you turn it on. When on, other signed-in members can see your name, headline, status, level, city, skills, bio, contact email and LinkedIn, and roles they post will rank you by match.</span></span></label>'+
+     '<label class="dit-check hub-pool"><input type="checkbox" id="f-pool"'+(m.in_pool===true?' checked':'')+'><span><b>Show me in the Talent Pool</b><span class="dit-hint">Off unless you turn it on. When on, other members can see your name, headline, status, level, city, school or company, skills, bio, the fields, kinds of role and work setup you are looking for, contact email and LinkedIn, and roles they post will rank you by match. Your CV stays private unless you share it below.</span></span></label>'+
      (onb?'<label class="dit-check"><input type="checkbox" id="f-consent"><span>I agree that Dara in Tech stores this information to run the Member Hub.</span></label>':''))+
    '<div class="hub-form__foot"><p class="err" id="form-err" role="alert"></p><button class="dit-btn dit-btn--lg" type="submit">'+(onb?'Create my profile':'Save profile')+'</button></div></form>';
 }
@@ -438,7 +370,7 @@ function rankedForMe(){
 function jobCardHTML(j,r){
   const mine=S.user&&j.posted_by===S.user.id;
   const open=isOpen(j);
-  return '<article class="job" data-act="open-job" data-id="'+esc(j.id)+'"><div class="job-main"><div class="job-top"><h3><button class="job-title" data-act="open-job" data-id="'+esc(j.id)+'">'+esc(j.title)+'</button></h3>'+(mine?'<span class="badge you">Your post</span>':'')+(open?'':'<span class="badge warn">Closed</span>')+'</div>'+
+  return '<article class="job" data-act="open-job" data-id="'+esc(j.id)+'"><div class="job-main"><div class="job-top"><h3><button class="job-title" data-act="open-job" data-id="'+esc(j.id)+'">'+esc(j.title)+'</button></h3>'+(mine?'<span class="badge you">Your post</span>':'')+(open?'':'<span class="badge warn">Closed</span>')+(!isApproved(j)&&(mine||S.admin)?'<span class="badge">Awaiting approval</span>':'')+'</div>'+
    '<p class="co">'+esc(j.company)+(j.location?' · '+esc(j.location):'')+'</p>'+
    '<div class="tags"><span class="tag">'+esc(j.category)+'</span><span class="tag">'+esc(lbl(JOB_TYPES,j.job_type))+'</span><span class="tag">'+esc(lbl(MODES,j.work_mode))+'</span><span class="tag">'+esc(lbl(LEVELS,j.level))+'</span></div>'+
    '<div class="chips">'+chipsFor(r.reqHit,r.reqMiss,6)+'</div></div>'+scoreHTML(r.total)+'</article>';
@@ -493,14 +425,17 @@ function filteredMembers(){
     return true;
   }).sort((a,b)=>String(a.full_name).localeCompare(String(b.full_name)));
 }
+/* Who may download another member's shared CV: admins, and members with an approved, open role of their own
+   (the database enforces the same rule; this only avoids showing a button that would fail). */
+function canGetSharedCVs(){return S.admin||S.jobs.some(j=>j.posted_by===S.user.id&&isOpen(j)&&isApproved(j))}
 function personHTML(m,r,jobSkills){
   const hit=new Set((jobSkills||[]).map(nk));
   const sk=(m.skills||[]).slice().sort((a,b)=>(hit.has(nk(b))?1:0)-(hit.has(nk(a))?1:0));
-  const li=safeUrl(m.linkedin);
+  const li=linkedinUrl(m.linkedin);
   return '<div class="person"><div class="avatar" aria-hidden="true">'+esc(ini(m.full_name))+'</div><div class="person-main"><b>'+esc(m.full_name)+'</b><span class="co">'+esc(m.headline||'')+'</span><div class="tags"><span class="tag">'+esc(lbl(LEVELS,m.level))+'</span>'+(m.city?'<span class="tag">'+esc(m.city)+'</span>':'')+'<span class="tag">'+esc(lbl(STATUSES,m.status))+'</span></div>'+
    '<div class="chips">'+sk.slice(0,8).map(s=>'<span class="chip'+(hit.has(nk(s))?' hit':'')+'">'+(hit.has(nk(s))?ICON.check:'')+esc(s)+'</span>').join('')+(sk.length>8?'<span class="chip more">+'+(sk.length-8)+' more</span>':'')+'</div>'+
    (m.bio?'<p class="note">'+esc(m.bio)+'</p>':'')+
-   '<div class="contact"><span class="sel">'+esc(m.email||'')+'</span>'+(li?'<a href="'+esc(li)+'" target="_blank" rel="noopener noreferrer">LinkedIn<span class="dit-visually-hidden"> (opens in a new tab)</span></a>':'')+(m.cv_path&&(m.cv_shared||S.admin||m.id===S.user.id)?'<button type="button" class="dit-btn dit-btn--outline dit-btn--sm" data-act="dl-cv" data-id="'+esc(m.id)+'">Download CV</button>':'')+'</div></div>'+(r?scoreHTML(r.total,true):'')+'</div>';
+   '<div class="contact"><span class="sel">'+esc(m.email||'')+'</span>'+(li?'<a href="'+esc(li)+'" target="_blank" rel="noopener noreferrer">LinkedIn<span class="dit-visually-hidden"> (opens in a new tab)</span></a>':'')+(m.cv_path&&(m.id===S.user.id||S.admin||(m.cv_shared&&m.in_pool&&canGetSharedCVs()))?'<button type="button" class="dit-btn dit-btn--outline dit-btn--sm" data-act="dl-cv" data-id="'+esc(m.id)+'">Download CV</button>':'')+'</div></div>'+(r?scoreHTML(r.total,true):'')+'</div>';
 }
 function membersResultsHTML(){
   const rows=filteredMembers();
@@ -527,7 +462,7 @@ function postingsHTML(){
   return '<div class="hub-head"><div><h1>My postings</h1><p class="dit-lead">Roles you posted, with the members who fit them best.</p></div><button class="dit-btn" data-act="post-job">'+ICON.plus+' Post a role</button></div>'+
    (mine.length?'<div class="list">'+mine.map(j=>{
      const c=candidatesFor(j);const strong=c.filter(x=>x.r.total>=70).length;
-     return '<article class="job" data-act="open-job" data-id="'+esc(j.id)+'"><div class="job-main"><div class="job-top"><h3><button class="job-title" data-act="open-job" data-id="'+esc(j.id)+'">'+esc(j.title)+'</button></h3>'+(isOpen(j)?'<span class="badge you">Open</span>':'<span class="badge warn">Closed</span>')+'</div><p class="co">'+esc(j.company)+' · posted '+esc(fmtD(j.created_at))+(j.deadline?' · closes '+esc(fmtD(j.deadline)):'')+'</p>'+
+     return '<article class="job" data-act="open-job" data-id="'+esc(j.id)+'"><div class="job-main"><div class="job-top"><h3><button class="job-title" data-act="open-job" data-id="'+esc(j.id)+'">'+esc(j.title)+'</button></h3>'+(isOpen(j)?'<span class="badge you">Open</span>':'<span class="badge warn">Closed</span>')+(isApproved(j)?'':'<span class="badge">Awaiting approval</span>')+'</div><p class="co">'+esc(j.company)+' · posted '+esc(fmtD(j.created_at))+(j.deadline?' · closes '+esc(fmtD(j.deadline)):'')+'</p>'+
       '<p class="count"><b class="mono">'+strong+'</b> member'+(strong===1?'':'s')+' at 70% or more'+(c.length?', best match <b class="mono">'+c[0].r.total+'%</b>':'')+' · '+c.length+' in the Talent Pool</p></div><div class="btn-row"><span class="dit-btn dit-btn--outline dit-btn--sm">View candidates</span></div></article>';
    }).join('')+'</div>':emptyHTML('You have not posted a role yet','Post an opening and see which members fit it, ranked by match.','<button class="dit-btn" data-act="post-job">'+ICON.plus+' Post a role</button>'))+myPostsHTML();
 }
@@ -649,13 +584,19 @@ function adminTableHTML(){
     return '<tr><td><b>'+esc(m.full_name)+'</b><br><span class="note">'+esc(m.headline||'')+'</span></td><td class="sel">'+esc(m.email||'')+'</td><td>'+esc(m.city||'')+'</td><td>'+esc(lbl(STATUSES,m.status))+'</td><td>'+esc(lbl(LEVELS,m.level))+'</td><td>'+esc((m.skills||[]).join(', '))+'</td><td>'+esc(fmtD(m.created_at))+'</td><td>'+(m.in_pool?'Yes':'No')+'</td><td>'+(m.cv_path?'<button class="dit-btn dit-btn--outline dit-btn--sm" data-act="dl-cv" data-id="'+esc(m.id)+'">Download</button>':'')+'</td><td>'+(conf?'<button class="dit-btn dit-btn--danger dit-btn--sm" data-act="member-del-yes" data-id="'+esc(m.id)+'">Confirm</button> <button class="dit-btn dit-btn--ghost dit-btn--sm" data-act="cancel-confirm">Cancel</button>':'<button class="dit-btn dit-btn--ghost dit-btn--sm" data-act="member-del" data-id="'+esc(m.id)+'">Remove</button>')+'</td></tr>';
   }).join('')+'</tbody></table>';
 }
+function pendingRolesHTML(){
+  const pending=S.jobs.filter(j=>!isApproved(j));
+  if(!S.jobs.some(j=>'approved_at' in j))return '';
+  return '<section class="list" aria-labelledby="h-pending"><div class="sec-h"><h2 id="h-pending" class="hub-h2">Roles awaiting approval</h2><span class="count">'+pending.length+'</span></div>'+
+   (pending.length?pending.map(j=>jobCardHTML(j,matchScore(S.me||{},j))).join(''):'<p class="dit-muted">Nothing to review.</p>')+'</section>';
+}
 function adminHTML(){
   if(!S.admin)return emptyHTML('Admins only','Ask the community team to add you as an admin.');
   const total=S.members.length,pool=S.members.filter(m=>m.in_pool).length;
   return (S.me?'':'<div>'+navLink('home','Back to profile setup','dit-btn dit-btn--ghost dit-btn--sm')+'</div>')+'<div class="hub-head"><div><h1>Participants</h1><p class="dit-lead">Everyone who has saved a profile, including members outside the Talent Pool.</p></div><div class="btn-row"><button class="dit-btn" data-act="export-csv">Export CSV</button>'+(DEMO?'<button class="dit-btn dit-btn--outline" data-act="reset-demo">Reset demo data</button>':'')+'</div></div>'+
    '<ul class="hub-stats" role="list"><li class="dit-card dit-card--soft"><span class="hub-stats__num">'+total+'</span><span>registered</span></li><li class="dit-card dit-card--soft"><span class="hub-stats__num">'+pool+'</span><span>in the Talent Pool</span></li><li class="dit-card dit-card--soft"><span class="hub-stats__num">'+S.jobs.length+'</span><span>roles posted</span></li><li class="dit-card dit-card--soft"><span class="hub-stats__num">'+S.posts.length+'</span><span>Mading posts</span></li></ul>'+
    '<div class="filters dit-card dit-card--soft" role="search" aria-label="Search participants"><div class="search">'+ICON.search+'<input class="dit-input" id="a-q" data-aq type="search" placeholder="Name, email, city or skill" aria-label="Search participants" value="'+esc(S.aq)+'"></div></div>'+
-   '<div class="tbl-wrap" id="admin-table">'+adminTableHTML()+'</div>';
+   '<div class="tbl-wrap" id="admin-table">'+adminTableHTML()+'</div>'+pendingRolesHTML();
 }
 function viewHTML(){
   if(!S.ready)return '<div class="hub-loading">'+dalaImg('read')+'<p>Loading the Member Hub…</p></div>';
@@ -710,6 +651,8 @@ function jobDetailHTML(j){
   return '<div class="detail-head"><p class="hub-eyebrow">'+esc(j.category)+'</p><h2 id="modal-title">'+esc(j.title)+'</h2><p class="co">'+esc(j.company)+(j.location?' · '+esc(j.location):'')+'</p>'+
    '<div class="tags"><span class="tag">'+esc(lbl(JOB_TYPES,j.job_type))+'</span><span class="tag">'+esc(lbl(MODES,j.work_mode))+'</span><span class="tag">'+esc(lbl(LEVELS,j.level))+'</span>'+(isOpen(j)?'':'<span class="badge warn">Closed</span>')+(j.deadline?'<span class="tag">Closes '+esc(fmtD(j.deadline))+'</span>':'')+'</div>'+
    '<p class="note">Posted '+esc(fmtD(j.created_at))+' by '+esc(poster?poster.full_name:'a Dara member')+'</p></div>'+
+   (!isApproved(j)&&mine?'<div class="dit-alert dit-alert--info" role="note">'+ICON.star+'<div><strong class="dit-alert__title">Awaiting approval</strong><span class="dit-alert__body">An admin reviews new roles. Until then, members can see this role but you cannot download shared CVs.</span></div></div>':'')+
+   (!isApproved(j)&&S.admin?'<div class="btn-row"><button class="dit-btn" data-act="approve-job" data-id="'+esc(j.id)+'">Approve role</button><span class="dit-muted">Approving lets the poster download CVs that members chose to share.</span></div>':'')+
    (mine?'':'<section class="panel" aria-label="Your match"><div class="mscore m-'+band(r.total)+'"><strong>'+r.total+'%</strong><span>'+bandLabel(r.total)+'</span><div class="bar"><i style="width:'+r.total+'%"></i></div></div><ul class="bk">'+r.parts.map(p=>'<li><div class="bk-top"><span>'+esc(p.label)+'</span><span class="mono">'+(p.ok?Math.round(p.s*p.w)+' / '+p.w:'not rated')+'</span></div><div class="track"><i style="width:'+(p.ok?Math.round(p.s*100):0)+'%"></i></div><p class="note">'+esc(p.note)+'</p></li>').join('')+'</ul></section>')+
    ((j.req_skills||[]).length?'<section class="sub"><h3>Required skills</h3><div class="chips">'+(mine?(j.req_skills||[]).map(s=>'<span class="chip">'+esc(s)+'</span>').join(''):chipsFor(r.reqHit,r.reqMiss))+'</div></section>':'')+
    ((j.nice_skills||[]).length?'<section class="sub"><h3>Nice to have</h3><div class="chips">'+(mine?(j.nice_skills||[]).map(s=>'<span class="chip">'+esc(s)+'</span>').join(''):chipsFor(r.niceHit,r.niceMiss))+'</div></section>':'')+
@@ -748,7 +691,7 @@ function showJob(id,fresh){
 
 /* ================= actions ================= */
 async function refreshData(){
-  const r=await Promise.all([API.listMembers(),API.listJobs(),API.listPosts()]);
+  const r=await Promise.all([API.listMembers(S.admin),API.listJobs(),API.listPosts()]);
   S.members=r[0]||[];S.jobs=r[1]||[];S.posts=r[2]||[];
 }
 async function afterLogin(u){
@@ -760,6 +703,12 @@ async function afterLogin(u){
   S.view=viewFromHash()||'home';S.ready=true;
   if(S.me)history.replaceState(null,'','#/'+slugOf(S.view));
   render();toTop();
+}
+/* Clear everything held in memory for the signed-in member. Used by Sign out and when another tab signs out. */
+function signedOut(){
+  history.replaceState(null,'',location.pathname);
+  Object.assign(S,{user:null,admin:false,me:null,members:[],jobs:[],posts:[],view:'home',authStep:'email',authErr:'',busy:false,confirm:null,cvPending:null,cvRemove:false,cvShare:null,mad:'all'});
+  if($('#modal-root .modal'))closeModal();render();
 }
 /* View changes jump to the top instantly (the site's smooth scrolling is for in-page anchors only). */
 function toTop(){window.scrollTo({top:0,left:0,behavior:'instant'})}
@@ -792,19 +741,21 @@ async function submitProfile(form){
   if(!row.interests.length)return setErr('Pick at least one field of interest.');
   if(!row.skills.length)return setErr('Add at least one skill.');
   if(row.bio.length>280)return setErr('Keep the bio to 280 characters.');
-  if(row.linkedin){const u=safeUrl(row.linkedin);if(!u)return setErr('That LinkedIn link does not look right.');row.linkedin=u}
+  if(row.linkedin){const u=linkedinUrl(row.linkedin);if(!u)return setErr('That LinkedIn link does not look right. Use your linkedin.com profile address.');row.linkedin=u}
   if(onb&&!$('#f-consent',form).checked)return setErr('Tick the box to agree before joining.');
   const btn=$('button[type=submit]',form);btn.disabled=true;
   try{
     const oldCv=S.me&&S.me.cv_path?S.me:null;
     let cv={cv_path:oldCv?oldCv.cv_path:null,cv_name:oldCv?oldCv.cv_name:null,cv_size:oldCv?oldCv.cv_size:null};
     let replaced=false;
-    if(S.cvPending){cv=await API.uploadCV(S.user.id,S.cvPending);replaced=true}
+    if(S.cvPending){cv=await API.uploadCV(S.user.id,S.cvPending,S.cvKind);replaced=true}
     else if(S.cvRemove&&oldCv){await API.removeCV(oldCv);cv={cv_path:null,cv_name:null,cv_size:null}}
     cv.cv_shared=!!cv.cv_path&&row.in_pool&&cvShareVal();
     Object.assign(row,cv);
-    const saved=await API.saveMe(row);
-    if(replaced&&oldCv&&!DEMO)await API.removeCV(oldCv).catch(()=>{});
+    let saved;
+    try{saved=await API.saveMe(row)}
+    catch(err){if(replaced&&!DEMO)await API.removeCV(Object.assign({id:S.user.id},cv)).catch(()=>{});throw err} /* no orphaned upload */
+    if(replaced&&oldCv&&!DEMO)await API.removeCV(oldCv).catch(()=>toast('Your new CV is saved, but the old file could not be removed. Try again later.','comfort'));
     S.me=Object.assign({},row,saved||{});
     S.cvPending=null;S.cvRemove=false;S.cvShare=null;
     await refreshData();
@@ -858,6 +809,7 @@ document.addEventListener('click',async e=>{
       case 'close':closeModal();break;
       case 'post-job':PK.req=[];PK.nice=[];openModal(jobFormHTML());break;
       case 'edit-job':{const j=S.jobs.find(x=>x.id===t.dataset.id);if(j)setModal(jobFormHTML(j));break}
+      case 'approve-job':await API.approveJob(t.dataset.id);await refreshData();showJob(t.dataset.id);render();toast('Role approved','thumbs-up');break;
       case 'toggle-open':{const j=S.jobs.find(x=>x.id===t.dataset.id);if(j){await API.saveJob({id:j.id,is_open:j.is_open===false});await refreshData();showJob(j.id);render();toast(j.is_open===false?'Role reopened':'Role closed')}break}
       case 'del-job':S.confirm='j:'+t.dataset.id;showJob(t.dataset.id);break;
       case 'del-job-yes':await API.deleteJob(t.dataset.id);S.confirm=null;await refreshData();closeModal();render();toast('Role deleted');break;
@@ -872,7 +824,10 @@ document.addEventListener('click',async e=>{
       case 'pin-post':{const p=S.posts.find(x=>x.id===t.dataset.id);if(p){await API.setPinned(p.id,!p.pinned);await refreshData();showPost(p.id);render();toast(p.pinned?'Unpinned':'Pinned to the top')}break}
       case 'cv-clear':{S.cvPending=null;const i=$('#f-cv');if(i)i.value='';$('#cv-box').innerHTML=cvBoxHTML();break}
       case 'cv-remove':S.cvRemove=true;$('#cv-box').innerHTML=cvBoxHTML();break;
-      case 'dl-cv':{const m=S.members.find(x=>x.id===t.dataset.id)||(S.me&&S.me.id===t.dataset.id?S.me:null);if(!m||!m.cv_path)break;toast('Preparing CV…');const blob=await API.getCV(m);await saveFile(m.cv_name||'cv.pdf',blob);break}
+      case 'dl-cv':{const m=S.members.find(x=>x.id===t.dataset.id)||(S.me&&S.me.id===t.dataset.id?S.me:null);if(!m||!m.cv_path)break;toast('Preparing CV…');
+        const blob=await API.getCV(m),kind=await sniffCV(blob);
+        if(!kind)throw new Error('That file is not a real PDF or DOCX, so it was not downloaded.');
+        await saveFile(cvFileName(m,kind),new Blob([blob],{type:CV_MIME[kind]}));break}
       case 'pk-add':pickerAdd(t.dataset.pk,t.dataset.v);break;
       case 'pk-del':PK[t.dataset.pk].splice(+t.dataset.i,1);pickerRefresh(t.dataset.pk);break;
       case 'tg':{
@@ -883,15 +838,15 @@ document.addEventListener('click',async e=>{
         break}
       case 'clear-filters':S.f={q:'',cat:'',mode:'',type:'',min:0,sort:'match',open:true};render();break;
       case 'copy':try{await navigator.clipboard.writeText(t.dataset.v);toast('Copied')}catch(err){toast('Select the text to copy it')}break;
-      case 'signout':await API.signOut();history.replaceState(null,'',location.pathname);Object.assign(S,{user:null,admin:false,me:null,view:'home',authStep:'email',authErr:'',busy:false,confirm:null,cvPending:null,cvRemove:false,cvShare:null,mad:'all'});closeModal();render();break;
+      case 'signout':await API.signOut();signedOut();break;
       case 'google':try{await API.google()}catch(err){S.authErr=err.message;render()}break;
       case 'back-email':S.authStep='email';S.authErr='';render();break;
       case 'export-csv':await saveFile('dara-in-tech-participants.csv',csvText());break;
       case 'member-del':S.confirm='m:'+t.dataset.id;$('#admin-table').innerHTML=adminTableHTML();break;
-      case 'member-del-yes':{const mm=S.members.find(x=>x.id===t.dataset.id);if(mm&&mm.cv_path)await API.removeCV(mm).catch(()=>{})}await API.deleteMember(t.dataset.id);S.confirm=null;await refreshData();render();toast('Participant removed');break;
+      case 'member-del-yes':await API.purgeCVs(t.dataset.id);await API.deleteMember(t.dataset.id);S.confirm=null;await refreshData();render();toast('Participant removed');break;
       case 'reset-demo':await API.resetDemo();await refreshData();S.me=await API.getMe(S.user.id);render();toast('Demo data reset');break;
       case 'del-me':S.confirm='me';render();break;
-      case 'del-me-yes':if(S.me&&S.me.cv_path)await API.removeCV(S.me).catch(()=>{});await API.deleteMe(S.user.id);S.me=null;S.confirm=null;await refreshData();render();toTop();toast('Profile deleted');break;
+      case 'del-me-yes':await API.purgeCVs(S.user.id);await API.deleteMe(S.user.id);S.me=null;S.confirm=null;await refreshData();render();toTop();toast('Profile deleted');break;
     }
   }catch(err){toast(err&&err.message?err.message:'Something went wrong. Try again.','comfort')}
 });
@@ -936,7 +891,10 @@ function onInput(e){
     const f=t.files&&t.files[0];if(!f)return;
     if(!CV_EXT.includes(fileExt(f.name))){toast('Choose a PDF or DOCX file.');t.value='';return}
     if(f.size>CV_MAX){toast('That file is over 2 MB. Choose a smaller one.');t.value='';return}
-    S.cvPending=f;S.cvRemove=false;$('#cv-box').innerHTML=cvBoxHTML();
+    sniffCV(f).then(kind=>{
+      if(!kind||kind!==fileExt(f.name)){toast('That file doesn’t look like a real PDF or DOCX. Choose another file.','comfort');t.value='';return}
+      S.cvPending=f;S.cvKind=kind;S.cvRemove=false;$('#cv-box').innerHTML=cvBoxHTML();
+    });
   }else if(t.id==='f-cvshare'){
     S.cvShare=t.checked;
   }
@@ -966,6 +924,7 @@ document.addEventListener('visibilitychange',async()=>{
 
 /* ================= boot ================= */
 async function boot(){
+  if(DEMO)API=(await import('./demo.js')).createDemoAPI({store,uid8});
   if(!DEMO&&!CONFIGURED){
     console.error('[Dara Hub] Not configured: set PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY (or PUBLIC_DEMO_MODE=true for local development only).');
     $('#app').innerHTML='<main class="hub-main" id="main"><div class="dit-container hub-center"><section class="dit-card dit-card--soft hub-msg" data-hub-unconfigured><h1 class="hub-h2">The Member Hub is not available yet</h1><p class="dit-muted">We are still setting it up. Please check back soon.</p><a class="dit-btn dit-btn--outline" href="/">Back to Dara in Tech</a></section></div></main>';
@@ -973,12 +932,14 @@ async function boot(){
   }
   try{
     await API.init();
+    API.onSignedOut(()=>{if(S.user){signedOut();toast('You were signed out.')}});
     const u=await API.session();
     if(u){await afterLogin(u)}else{S.ready=true;render()}
   }catch(e){
     $('#app').innerHTML='<main class="hub-main" id="main"><div class="dit-container hub-center"><section class="dit-card dit-card--soft hub-msg" role="alert"><h1 class="hub-h2">The Member Hub could not start</h1><p class="dit-muted">'+esc(e.message||'Unknown error')+'</p><a class="dit-btn dit-btn--outline" href="/">Back to Dara in Tech</a></section></div></main>';
   }
 }
-if(window.__DARA_TEST)window.__DARA_TEST={matchScore,nk,seedDemo,csvText,S};
+/* Test hook: demo builds only (it exposes in-memory state). */
+if(DEMO&&window.__DARA_TEST)window.__DARA_TEST={matchScore,nk,csvText,S};
 boot();
 })();

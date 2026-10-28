@@ -230,3 +230,67 @@ test.describe('interactive Dala (hero)', () => {
     expect(violations.map((v) => v.id)).toEqual([]);
   });
 });
+
+test.describe('security', () => {
+  test('Content Security Policy is present and nothing legitimate is blocked', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__csp = [];
+      document.addEventListener('securitypolicyviolation', (e) => window.__csp.push(`${e.violatedDirective} ${e.blockedURI}`));
+    });
+    const violations = async () => page.evaluate(() => window.__csp);
+
+    await page.goto(siteUrl + '/');
+    const csp = await page.locator('meta[http-equiv="content-security-policy"]').getAttribute('content');
+    for (const d of ["default-src 'self'", "object-src 'none'", "base-uri 'self'", 'script-src']) expect(csp).toContain(d);
+    expect(csp).not.toMatch(/script-src[^;]*'unsafe-inline'/);
+    await page.click('[data-theme-toggle]');
+    await page.getByRole('button', { name: /Say hi to Dala/ }).click();
+    await page.goto(siteUrl + '/styleguide');
+    await page.goto(siteUrl + '/signup');
+    await page.waitForSelector('form[data-form="auth-email"]');
+    await page.goto(siteUrl + '/hub/');
+    await page.fill('#a-email', 'csp@example.com');
+    await page.click('form[data-form="auth-email"] button[type=submit]');
+    await page.fill('#a-code', '123456');
+    await page.click('form[data-form="auth-code"] button[type=submit]');
+    await page.waitForSelector('form[data-form="profile"]');
+    expect(await violations()).toEqual([]);
+  });
+
+  test('an injected inline script is refused by the browser', async ({ page }) => {
+    await page.goto(siteUrl + '/');
+    const ran = await page.evaluate(() => new Promise((resolve) => {
+      window.__injected = false;
+      const s = document.createElement('script');
+      s.textContent = 'window.__injected = true';
+      document.body.appendChild(s);
+      setTimeout(() => resolve(window.__injected), 200);
+    }));
+    expect(ran).toBe(false);
+  });
+
+  test('demo code and the demo sign-in are not in a production build', async ({ request }) => {
+    // The unconfigured build is a production build (no demo flag): its Hub bundle must not contain the demo backend.
+    const html = await (await request.get(unconfiguredUrl + '/hub/')).text();
+    const scripts = [...html.matchAll(/src="(\/_astro\/[^"]+\.js)"/g)].map((m) => m[1]);
+    expect(scripts.length).toBeGreaterThan(0);
+    for (const src of scripts) {
+      const js = await (await request.get(unconfiguredUrl + src)).text();
+      expect(js).not.toContain('createDemoAPI');
+      expect(js).not.toContain('dara_demo_db');
+    }
+  });
+
+  test('a demo build served from a non-local hostname does not run the demo', async ({ page }) => {
+    // Same demo build, reached through a hostname that is not localhost: it must behave as unconfigured.
+    // Any scheme: the CSP's upgrade-insecure-requests turns asset requests into https.
+    await page.route(/^https?:\/\/demo-preview\.example\//, async (route) => {
+      const url = new URL(route.request().url());
+      const res = await page.request.get(siteUrl + url.pathname);
+      await route.fulfill({ response: res });
+    });
+    await page.goto('http://demo-preview.example/hub/');
+    await expect(page.locator('[data-hub-unconfigured]')).toBeVisible();
+    await expect(page.locator('form[data-form="auth-email"]')).toHaveCount(0);
+  });
+});

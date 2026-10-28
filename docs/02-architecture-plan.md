@@ -197,7 +197,7 @@ DS → web mapping notes:
 3. `src/hub/legacy.css` holds the v1 `<style>` block verbatim. It's loaded **only** on `/hub/` in Phase 4, so v1 and site styles can't collide.
 4. `/hub/` is rendered by a minimal layout with doctype, `lang="en"`, charset, and viewport. This alone fixes the mobile layout bug, because v1's responsive CSS starts applying.
 5. Auth redirects keep working without code changes. `emailRedirectTo` and the OAuth `redirectTo` are built from `location.origin + location.pathname`, which becomes `/hub/`.
-   - **Dashboard action for you (not code):** add `https://<domain>/hub/` and `https://<domain>/signup` (plus the Vercel preview pattern) to Supabase → Authentication → URL Configuration → Redirect URLs. Sign-in links sent from `/signup` return there and are handed over to `/hub/`.
+   - **Dashboard action for you (not code):** add exactly `https://<domain>/hub/` and `https://<domain>/signup` to Supabase → Authentication → URL Configuration → Redirect URLs. **No wildcards** (e.g. `*.vercel.app`): anyone can deploy a matching site and receive members' sign-in tokens (see `03-security-review.md`, finding S1). Vercel previews use a separate staging Supabase project.
 6. **Old magic links.** Links emailed before the switch point at `/`. A ~5-line inline script on the homepage forwards any auth callback (`#access_token=`, `?code=`, `#error_description=`) to `/hub/` with the fragment intact.
 
 ### Phase 5: Hub redesign (behaviour preserved; changes listed explicitly)

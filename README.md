@@ -7,6 +7,7 @@
 > - Develop: Node 22+, `npm install`, copy `.env.example` to `.env`, then `npm run dev`. The site is at `/` and the Member Hub at `/hub/`. For the Hub without Supabase, set `PUBLIC_DEMO_MODE=true` in `.env` (local only, never in production).
 > - Tests (use your installed Google Chrome): `npm test` runs the Hub suite against both v1 and `/hub/`, plus site checks.
 > - Database changes are proposed as files in [`supabase/migrations/`](supabase/migrations/) and are **not** applied automatically.
+> - **Security:** read [`docs/03-security-review.md`](docs/03-security-review.md) before going live. Do not re-run `schema.sql` on a database where the migrations have been applied (the Indonesian guide below predates them).
 
 # Dara in Tech Talent Hub (v1)
 

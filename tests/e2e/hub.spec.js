@@ -293,3 +293,82 @@ test.describe('Dala reacts in the Hub (Phase 5)', () => {
     await expect(page.locator('#results .empty img')).toHaveAttribute('data-pose', 'comfort'); // nothing found
   });
 });
+
+test.describe('security (Phase 5)', () => {
+  test('roles need admin approval before their poster can download shared CVs', async ({ page }) => {
+    test.skip(legacy, 'v1 has no role approval');
+    const directoryHasDownload = async () => {
+      await page.click('.tab[data-v="pool"]');
+      await page.click('.seg-b[data-v="members"]');
+      return page.locator('#members-results [data-act="dl-cv"]').count();
+    };
+    await onboard(page);
+    expect(await directoryHasDownload()).toBe(0);            // no role yet
+
+    await page.click('.seg-b[data-v="roles"]');
+    await page.locator('button[data-act="post-job"]').first().click();
+    await page.fill('#j-title', 'Data Intern');
+    await page.fill('#j-company', 'Acme');
+    await page.fill('#pk-req', 'SQL'); await page.press('#pk-req', 'Enter');
+    await page.fill('#j-mail', 'hr@acme.example');
+    await page.click('form[data-form="job"] button[type=submit]');
+    await page.click('.tab[data-v="postings"]');
+    await expect(page.locator('.job', { hasText: 'Data Intern' })).toContainText('Awaiting approval');
+    expect(await directoryHasDownload()).toBe(0);            // role not approved yet
+
+    await page.click('button[data-act="signout"]');
+    await signIn(page, 'admin@example.com');
+    await page.locator('[data-act="nav"][data-v="admin"]').first().click();
+    await page.locator('#h-pending').scrollIntoViewIfNeeded();
+    await page.locator('.job', { hasText: 'Data Intern' }).click();
+    await page.click('button[data-act="approve-job"]');
+    await expect(page.locator('#toast')).toContainText('Role approved');
+    await page.keyboard.press('Escape');
+
+    await page.click('button[data-act="signout"]');
+    await signIn(page, 'tester@example.com');
+    await page.waitForSelector('.tabs');
+    expect(await directoryHasDownload()).toBeGreaterThan(0); // approved: shared CVs downloadable
+  });
+
+  test('only linkedin.com links are accepted for LinkedIn', async ({ page }) => {
+    test.skip(legacy, 'v1 accepts any http(s) link');
+    await signIn(page, 'tester@example.com');
+    await fillValidProfile(page);
+    await page.fill('#f-linkedin', 'evil.example/linkedin.com/in/ayu');
+    await page.check('#f-consent');
+    await page.click('form[data-form="profile"] button[type=submit]');
+    await expect(page.locator('#form-err')).toContainText('linkedin.com');
+  });
+
+  test('signing out in one tab signs out the others', async ({ page, context }) => {
+    test.skip(legacy, 'v1 does not sync sign-out');
+    await onboard(page);
+    const other = await context.newPage();
+    await other.goto(hubUrl);
+    await other.waitForSelector('.tabs');
+    await other.click('button[data-act="signout"]');
+    await expect(page.locator('form[data-form="auth-email"]')).toBeVisible();
+    await expect(page.locator('#toast')).toContainText('signed out');
+  });
+
+  test('CV downloads get a safe name built from the member name', async ({ page }) => {
+    test.skip(legacy, 'v1 uses the stored file name');
+    await signIn(page, 'admin@example.com');
+    await page.locator('[data-act="nav"][data-v="admin"]').first().click();
+    const row = page.locator('#admin-table tr', { hasText: 'Nadia Putri' });
+    const download = page.waitForEvent('download');
+    await row.locator('[data-act="dl-cv"]').click();
+    expect((await download).suggestedFilename()).toBe('Nadia_Putri_CV.pdf');
+  });
+
+  test('a file that is not really a PDF is refused on upload', async ({ page }) => {
+    test.skip(legacy, 'v1 checks only the extension');
+    await signIn(page, 'tester@example.com');
+    await page.setInputFiles('#f-cv', { name: 'cv.pdf', mimeType: 'application/pdf', buffer: Buffer.from('<html><script>alert(1)</script></html>') });
+    await expect(page.locator('#toast')).toContainText('real PDF or DOCX');
+    await expect(page.locator('.cv-row')).toHaveCount(0);
+    await page.setInputFiles('#f-cv', { name: 'cv.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n%real enough for the check\n') });
+    await expect(page.locator('.cv-row')).toContainText('cv.pdf');
+  });
+});

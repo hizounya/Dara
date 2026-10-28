@@ -47,10 +47,16 @@
 --   Expected after this migration: "cvs: read own or admin" is the only
 --   policy mentioning bucket_id = 'cvs' for SELECT/ALL.
 --
--- VERIFY (staging project, two non-admin test accounts A and B):
+-- VERIFY (staging project, two non-admin test accounts A and B, plus C = a fresh account with no profile):
 --   1. A uploads a CV, ticks "share", stays in the pool.
---   2. As B (Hub, or supabase-js: storage.from('cvs').download(path)): fails.
---   3. As A: succeeds.   4. As an admin: succeeds.
+--   2. As B and as C, each must fail:
+--        storage.from('cvs').download('<A uid>/cv-....pdf')
+--        storage.from('cvs').list('<A uid>')            -> returns no objects
+--        storage.from('cvs').createSignedUrl('<A uid>/cv-....pdf', 60)
+--   3. As A: all succeed.   4. As an admin: all succeed.
+--
+-- NEXT: migration 20261028000500 (admin-approved role posters) replaces this policy with the
+-- final rule; apply this one first because it closes the gap immediately.
 -- =====================================================================
 
 begin;
