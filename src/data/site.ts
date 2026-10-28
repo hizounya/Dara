@@ -19,6 +19,7 @@ export const site = {
   contactEmail: 'daraintech.id@gmail.com' as string | null,   // confirmed by the team, 28 Oct 2026 (partnerships and general contact)
 
   hubUrl: '/hub/',
+  signupUrl: '/signup',
   // "Join our community" opens the WhatsApp group; the Member Hub (Talent Pool, roles, Mading) is a separate sign-up.
   joinUrl: COMMUNITY_URL,
   joinVia: 'WhatsApp',

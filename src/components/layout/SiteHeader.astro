@@ -1,7 +1,9 @@
 ---
 // Shared site header: logo, main navigation, theme toggle, Member login and the main call to action.
-// Below 960px the links move into a disclosure menu (button with aria-expanded; Escape closes it).
+// Below 1120px the links move into a disclosure menu (button with aria-expanded; Escape closes it).
 // Without JavaScript the menu simply stays open, so every link is still reachable.
+// At most two actions in the bar (team rule): Member login + Join our community. Sign up is linked from the
+// sign-in page, the Talent Hub section and the footer.
 // Styles live in components.css (.dit-hdr) because the Member Hub renders the same header.
 import Logo from '../brand/Logo.astro';
 import Button from '../content/Button.astro';
@@ -50,6 +52,6 @@ import { site } from '../../data/site';
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && button.getAttribute('aria-expanded') === 'true') { setOpen(false); button.focus(); }
     });
-    matchMedia('(min-width: 960px)').addEventListener('change', (e) => { if (e.matches) setOpen(false); });
+    matchMedia('(min-width: 1120px)').addEventListener('change', (e) => { if (e.matches) setOpen(false); });
   }
 </script>

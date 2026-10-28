@@ -262,3 +262,10 @@ td .dit-btn { white-space: nowrap; }
 /* Narrow phones: keep the header on one line. */
 .hub-badge { white-space: nowrap; }
 @media (max-width: 479px) { .hub-badge { display: none; } .hub-hdr .dit-hdr__bar { gap: var(--space-1); } }
+
+/* Sign in ↔ sign up switch under the form. */
+.hub-switch { margin-top: var(--space-3); padding-top: var(--space-2); border-top: 1px solid var(--border-soft); text-align: center; color: var(--text-muted); }
+.hub-switch a { font-weight: var(--weight-bold); }
+
+/* Small screens: the sign-in / sign-up form comes first (it is the page's main action); the explanation follows. */
+@media (max-width: 959px) { .hub-auth__card { order: -1; } }

@@ -16,6 +16,8 @@ const CONFIGURED=!!(CONFIG.SUPABASE_URL&&CONFIG.SUPABASE_ANON_KEY);
 /* Brand images (logo and Dala). URLs of the build-optimised files, passed in by src/pages/hub/index.astro. */
 const APP=document.getElementById('app').dataset;
 const IMG={logo:APP.logo,dala:APP.dala,dalaEmpty:APP.dalaEmpty};
+/* The same app also runs on /signup (data-mode="signup"): sign-up copy, then hand over to /hub/ once signed in. */
+const SIGNUP=APP.mode==='signup';
 const dalaImg=()=>'<img src="'+IMG.dalaEmpty+'" alt="" width="240" height="211" loading="lazy">';
 
 /* ================= constants ================= */
@@ -373,21 +375,26 @@ function shell(inner,withTabs){
 function authHTML(){
   const email=S.authStep==='email';
   const form=email?
-   '<form class="hub-login" data-form="auth-email" novalidate><h2>Sign in or join</h2><p class="dit-muted">Enter your email and we’ll send you a 6-digit code. No password needed.</p>'+
+   '<form class="hub-login" data-form="auth-email" novalidate>'+(SIGNUP?'<h2>Create your account</h2><p class="dit-muted">Enter your email and we’ll send you a 6-digit code to confirm it. No password needed.</p>':'<h2>Sign in</h2><p class="dit-muted">Welcome back. Enter your email and we’ll send you a 6-digit code. No password needed.</p>')+
    field('a-email','Email','<input class="dit-input" id="a-email" type="email" autocomplete="email" inputmode="email" placeholder="you@email.com" value="'+esc(S.authEmail)+'">')+
    '<p class="err" role="alert">'+esc(S.authErr)+'</p><button class="dit-btn" type="submit"'+(S.busy?' disabled':'')+'>'+(S.busy?'Sending…':'Send code')+'</button>'+
    (CONFIG.GOOGLE_LOGIN&&!DEMO?'<div class="divider">or</div><button class="dit-btn dit-btn--outline" type="button" data-act="google">Continue with Google</button>':'')+'</form>':
    '<form class="hub-login" data-form="auth-code" novalidate><h2>Check your email</h2><p class="dit-muted">We sent a code to <b class="sel">'+esc(S.authEmail)+'</b>. You can also tap the link in that email.</p>'+
    field('a-code','6-digit code','<input class="dit-input mono" id="a-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456">')+
    '<p class="err" role="alert">'+esc(S.authErr)+'</p><div class="btn-row"><button class="dit-btn" type="submit"'+(S.busy?' disabled':'')+'>'+(S.busy?'Checking…':'Sign in')+'</button><button class="dit-btn dit-btn--ghost" type="button" data-act="back-email">Use another email</button></div></form>';
-  const steps=[['users','One profile for the community','Your details are shared with other members only if you opt in.'],['briefcase','Roles from the community','Internships, full-time jobs and freelance work that members are hiring for.'],['star','A match score for every role','Skills, field, level, work setup and job type, with the reasons shown.']];
+  const steps=SIGNUP?
+   [['users','1. Enter your email','We send you a 6-digit code. No password to remember.'],['star','2. Confirm the code','Type the code from your email, or tap the link in it.'],['briefcase','3. Set up your profile','About three minutes. You choose whether other members can see you in the Talent Pool.']]:
+   [['users','One profile for the community','Your details are shared with other members only if you opt in.'],['briefcase','Roles from the community','Internships, full-time jobs and freelance work that members are hiring for.'],['star','A match score for every role','Skills, field, level, work setup and job type, with the reasons shown.']];
+  const swap='<p class="hub-switch">'+(SIGNUP?'Already a member? <a href="/hub/">Sign in</a>':'New here? <a href="/signup">Create an account</a>')+'</p>';
   return '<header class="dit-hdr hub-hdr">'+hubBar(themeBtn())+'</header>'+
    '<main class="hub-main" id="main" tabindex="-1"><div class="dit-container hub-auth">'+
-   '<section class="hub-auth__intro"><p class="hub-eyebrow">Member Hub</p><h1>Find your people, then your <span class="dit-grad-text">next role</span>.</h1><p class="dit-lead">Keep one profile, see roles that members post, and know how well each one fits you before you apply.</p>'+
+   '<section class="hub-auth__intro">'+(SIGNUP?
+     '<p class="hub-eyebrow">Sign up</p><h1>Join the <span class="dit-grad-text">Member Hub</span>.</h1><p class="dit-lead">Keep one profile, see roles that members post, and know how well each one fits you before you apply. Here is how it works:</p>':
+     '<p class="hub-eyebrow">Member Hub</p><h1>Find your people, then your <span class="dit-grad-text">next role</span>.</h1><p class="dit-lead">Keep one profile, see roles that members post, and know how well each one fits you before you apply.</p>')+
    '<ul class="hub-steps" role="list">'+steps.map(s=>'<li>'+orb(s[0])+'<div><h2 class="hub-steps__title">'+s[1]+'</h2><p>'+s[2]+'</p></div></li>').join('')+'</ul></section>'+
-   '<section class="hub-auth__card" aria-label="Sign in"><img class="hub-auth__dala" src="'+IMG.dala+'" alt="" width="480" height="421"><div class="dit-card dit-card--float">'+
+   '<section class="hub-auth__card" aria-label="'+(SIGNUP?'Sign up':'Sign in')+'"><img class="hub-auth__dala" src="'+IMG.dala+'" alt="" width="480" height="421"><div class="dit-card dit-card--float">'+
    (DEMO?'<div class="dit-alert dit-alert--info demo-note" role="note">'+ICON.star+'<div><strong class="dit-alert__title">Demo mode</strong><span class="dit-alert__body">Data stays in this browser. Use any email and the code <b class="mono">123456</b>. An email starting with <b>admin</b> opens the admin panel.</span></div></div><div style="height:16px"></div>':'')+
-   form+'</div></section></div></main>';
+   form+(S.authStep==='email'?swap:'')+'</div></section></div></main>';
 }
 function profileFormHTML(onb){
   const m=S.me||{};
@@ -654,7 +661,7 @@ function viewHTML(){
 }
 function render(){
   $('#app').innerHTML=viewHTML();
-  document.title=(!S.user?'Sign in':!S.me&&S.view!=='admin'?'Welcome':TITLES[S.view]||'Home')+' · Member Hub · Dara in Tech';
+  document.title=(!S.user?(SIGNUP?'Sign up':'Sign in'):!S.me&&S.view!=='admin'?'Welcome':TITLES[S.view]||'Home')+' · Member Hub · Dara in Tech';
   initPickers();
   const code=$('#a-code');if(code)code.focus();
   const cur=$('.tab[aria-current="page"]');
@@ -738,6 +745,7 @@ async function refreshData(){
   S.members=r[0]||[];S.jobs=r[1]||[];S.posts=r[2]||[];
 }
 async function afterLogin(u){
+  if(SIGNUP){location.replace('/hub/');return}
   S.user=u;S.authStep='email';S.authErr='';S.busy=false;
   S.admin=await API.isAdmin(u);
   S.me=await API.getMe(u.id);

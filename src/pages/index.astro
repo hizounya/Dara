@@ -208,8 +208,9 @@ const fmtDate = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('en-
             ))}
           </ul>
           <div class="panel__ctas">
-            <Button href={site.hubUrl}>Open the Member Hub</Button>
-            <span class="dit-muted">Sign in with your email. No password needed.</span>
+            <Button href={site.signupUrl}>Sign up for the Member Hub</Button>
+            <Button href={site.hubUrl} variant="ghost">Member login</Button>
+            <span class="dit-muted">Email code, no password needed.</span>
           </div>
         </div>
         <div class="panel__art">

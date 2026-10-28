@@ -30,7 +30,8 @@ Builds on `01-audit.md`.
 | `/partnerships` | Why partner, ways to collaborate, contact | Public | `src/pages/partnerships.astro` |
 | `/join` | Membership benefits, how joining works → Member Hub | Public | `src/pages/join.astro` |
 | `/privacy` | Privacy Policy (required before open registration) | Public | `src/pages/privacy.astro` |
-| `/hub/` | Member Hub: sign in / sign up, then the app | Hub handles auth | `src/pages/hub/index.astro` + `src/hub/` |
+| `/signup` | Sign up for the Member Hub (added 28 Oct 2026 at the team's request): steps + email form; after the code is confirmed it hands over to `/hub/` for profile setup | Public | `src/pages/signup.astro` (same app, `data-mode="signup"`) |
+| `/hub/` | Member Hub: sign in, then the app | Hub handles auth | `src/pages/hub/index.astro` + `src/hub/` |
 | `/hub/#/mading`, `#/talent-pool`, `#/postings`, `#/profile`, `#/admin` | Hub views (added in Phase 5) | Members / admins | Hash router inside the Hub |
 | `/404` | Not found | Public | `src/pages/404.astro` |
 | `/styleguide` | Component reference for contributors (`noindex`, not linked) | Public URL | `src/pages/styleguide.astro` |
@@ -196,7 +197,7 @@ DS → web mapping notes:
 3. `src/hub/legacy.css` holds the v1 `<style>` block verbatim. It's loaded **only** on `/hub/` in Phase 4, so v1 and site styles can't collide.
 4. `/hub/` is rendered by a minimal layout with doctype, `lang="en"`, charset, and viewport. This alone fixes the mobile layout bug, because v1's responsive CSS starts applying.
 5. Auth redirects keep working without code changes. `emailRedirectTo` and the OAuth `redirectTo` are built from `location.origin + location.pathname`, which becomes `/hub/`.
-   - **Dashboard action for you (not code):** add `https://<domain>/hub/` and the Vercel preview pattern to Supabase → Authentication → URL Configuration → Redirect URLs.
+   - **Dashboard action for you (not code):** add `https://<domain>/hub/` and `https://<domain>/signup` (plus the Vercel preview pattern) to Supabase → Authentication → URL Configuration → Redirect URLs. Sign-in links sent from `/signup` return there and are handed over to `/hub/`.
 6. **Old magic links.** Links emailed before the switch point at `/`. A ~5-line inline script on the homepage forwards any auth callback (`#access_token=`, `?code=`, `#error_description=`) to `/hub/` with the fragment intact.
 
 ### Phase 5: Hub redesign (behaviour preserved; changes listed explicitly)

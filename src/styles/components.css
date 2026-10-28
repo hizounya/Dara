@@ -157,10 +157,11 @@ textarea.dit-input { min-height: 120px; resize: vertical; }
 [data-theme-toggle] .i-sun, :root[data-theme="dark"] [data-theme-toggle] .i-moon { display: none; }
 :root[data-theme="dark"] [data-theme-toggle] .i-sun { display: block; }
 
-/* ---------- Site header (shared by SiteHeader.astro and the Member Hub) ---------- */
+/* ---------- Site header (shared by SiteHeader.astro and the Member Hub) ----------
+   Collapses into the Menu button below 1120px: with four links and three actions, narrower bars wrap. */
 .dit-hdr { position: sticky; top: 0; z-index: 50; background: var(--page-bg); border-bottom: 1px solid var(--border-soft); }
 .dit-hdr__bar { display: flex; align-items: center; gap: var(--space-2); min-height: var(--header-h); }
-.dit-hdr__logo { display: inline-flex; margin-right: auto; border-radius: 12px; }
+.dit-hdr__logo { display: inline-flex; flex-shrink: 0; margin-right: auto; border-radius: 12px; }
 .dit-hdr__actions { display: flex; align-items: center; gap: var(--space-1); }
 
 .dit-hdr__menu-btn {
@@ -171,14 +172,14 @@ textarea.dit-input { min-height: 120px; resize: vertical; }
 .dit-hdr__menu-btn .dit-icon { width: 20px; height: 20px; }
 
 .dit-hdr__links { list-style: none; margin: 0; padding: 0; }
-.dit-hdr__links a {
+.dit-hdr__links a { white-space: nowrap;
   display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: var(--radius-control);
   color: var(--text-headline); font: var(--weight-medium) var(--fs-body) / 1.2 var(--font-body); text-decoration: none;
 }
 .dit-hdr__links a:hover { color: var(--link-hover); background: var(--surface-soft); }
 
 /* Mobile: full-width panel under the bar. */
-@media (max-width: 959px) {
+@media (max-width: 1119px) {
   .dit-hdr__menu {
     position: absolute; inset: 100% 0 auto; padding: var(--space-2) var(--gutter) var(--space-3);
     background: var(--page-bg); border-bottom: 1px solid var(--border-soft); box-shadow: var(--shadow-soft);
@@ -193,7 +194,7 @@ textarea.dit-input { min-height: 120px; resize: vertical; }
 }
 
 /* Desktop: links inline between the logo and the actions. */
-@media (min-width: 960px) {
+@media (min-width: 1120px) {
   .dit-hdr__bar { gap: var(--space-3); }
   .dit-hdr__logo { margin-right: 0; }
   .dit-hdr__menu { display: contents; }

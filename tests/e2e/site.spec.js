@@ -99,7 +99,8 @@ test.describe('homepage structure and navigation', () => {
     await page.getByRole('link', { name: 'Explore Talent Hub' }).click();
     await expect(page).toHaveURL(/\/#talent-hub$/);
     await expect(page.locator('#talent-hub h2')).toBeInViewport();
-    await expect(page.locator('#talent-hub').getByRole('link', { name: 'Open the Member Hub' })).toHaveAttribute('href', '/hub/');
+    await expect(page.locator('#talent-hub').getByRole('link', { name: 'Sign up for the Member Hub' })).toHaveAttribute('href', '/signup');
+    await expect(page.locator('#talent-hub').getByRole('link', { name: 'Member login' })).toHaveAttribute('href', '/hub/');
   });
 
   test('every internal link leads somewhere that exists', async ({ page, request }) => {
@@ -155,5 +156,43 @@ test.describe('mobile menu', () => {
     await page.getByRole('button', { name: 'Menu' }).click();
     const { violations } = await new AxeBuilder({ page }).include('header').withTags(['wcag2a', 'wcag2aa']).analyze();
     expect(violations.map((v) => v.id)).toEqual([]);
+  });
+});
+
+test.describe('sign up page', () => {
+  test('explains the steps, links back to sign in, and is linked from the page and footer', async ({ page }) => {
+    await page.goto(siteUrl + '/');
+    // Navbar keeps at most two actions; sign up is reached from the Talent Hub section and the footer.
+    await expect(page.locator('.dit-hdr__ctas a')).toHaveCount(2);
+    await expect(page.locator('#talent-hub').getByRole('link', { name: 'Sign up for the Member Hub' })).toHaveAttribute('href', '/signup');
+    await expect(page.locator('footer').getByRole('link', { name: 'Sign up for the Member Hub' })).toHaveAttribute('href', '/signup');
+    await page.goto(siteUrl + '/signup');
+    await expect(page.locator('h1')).toHaveText('Join the Member Hub.');
+    await expect(page.getByRole('heading', { name: 'Create your account' })).toBeVisible();
+    await expect(page).toHaveTitle(/^Sign up · Member Hub/);
+    await expect(page.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/hub/');
+  });
+
+  test('sign-in page offers the way to sign up', async ({ page }) => {
+    await page.goto(siteUrl + '/hub/');
+    await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Create an account' })).toHaveAttribute('href', '/signup');
+  });
+
+  test('signing up (demo) confirms the email, then continues to profile setup in the Hub', async ({ page }) => {
+    await page.goto(siteUrl + '/signup');
+    await page.fill('#a-email', 'new.member@example.com');
+    await page.click('form[data-form="auth-email"] button[type=submit]');
+    await page.fill('#a-code', '123456');
+    await page.click('form[data-form="auth-code"] button[type=submit]');
+    await page.waitForURL(/\/hub\/$/);
+    await expect(page.locator('form[data-form="profile"]')).toBeVisible();
+    await expect(page.locator('#f-pool')).not.toBeChecked();
+  });
+
+  test('unconfigured build: sign up fails closed too', async ({ page }) => {
+    await page.goto(unconfiguredUrl + '/signup');
+    await expect(page.locator('[data-hub-unconfigured]')).toContainText('not available yet');
+    await expect(page.locator('form[data-form="auth-email"]')).toHaveCount(0);
   });
 });
