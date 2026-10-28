@@ -1,0 +1,19 @@
+:root{
+--font-display:"Open Sauce Sans","Hanken Grotesk",system-ui,sans-serif;
+--font-body:"Hanken Grotesk","HK Grotesk",system-ui,sans-serif;
+/* Instagram 1080×1350 scale (px at native canvas size) */
+--type-hero:150px;      /* "Hi, we're / Dara in Tech", "Join us" */
+--type-title:132px;     /* "Why we exist", "Why Dara?" */
+--type-section:110px;   /* "What we do" */
+--type-subhead:52px;    /* "Sharing Sessions", definition word */
+--type-lead:40px;       /* standalone lead lines, bold kickers */
+--type-body:38px;       /* body paragraphs */
+--type-caption:30px;    /* handle, swipe label */
+--type-label:24px;
+--lh-tight:0.95; /* @kind other */
+--lh-heading:1.1; /* @kind other */
+--lh-body:1.42; /* @kind other */
+--tracking-display:-0.035em; /* @kind other */
+--tracking-body:-0.005em; /* @kind other */
+--weight-regular:400; /* @kind font */--weight-medium:500; /* @kind font */--weight-bold:700; /* @kind font */--weight-black:800; /* @kind font */
+}

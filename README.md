@@ -1,4 +1,13 @@
-# Dara in Tech Talent Hub
+# Dara in Tech
+
+> **Work in progress on `feature/official-website`.** This repository is becoming the official Dara in Tech website: an Astro public site with the Talent Hub at `/hub/`.
+>
+> - The original single-file Talent Hub is preserved unchanged in [`legacy/talent-hub-v1/`](legacy/talent-hub-v1/). The Indonesian guide below describes that version. Its `index.html` now lives in that folder.
+> - Plans and audit: [`docs/`](docs/).
+> - Develop: Node 22+, `npm install`, `npm run dev` (copy `.env.example` to `.env` first).
+> - Hub regression tests (uses your installed Google Chrome): `npm run test:hub:legacy`.
+
+# Dara in Tech Talent Hub (v1)
 
 Website komunitas dengan login member, database peserta, dan Talent Pool dengan skor kecocokan (match %).
 

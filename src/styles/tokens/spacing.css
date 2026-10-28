@@ -1,0 +1,13 @@
+:root{
+--space-1:8px;--space-2:16px;--space-3:24px;--space-4:32px;--space-5:48px;--space-6:64px;--space-7:80px;--space-8:120px;
+--safe-margin:80px;     /* IG safe margin */
+--canvas-w:1080px;--canvas-h:1350px;
+--radius-sm:16px;--radius-md:28px;--radius-lg:44px;--radius-xl:64px;--radius-pill:999px;
+--border-hair:2px;--border-card:4px;--border-def:10px;
+--shadow-soft:0 24px 60px -20px rgba(106,76,213,.28);
+--shadow-cta:0 28px 50px -18px rgba(173,129,230,.55);
+--shadow-card:0 18px 40px -24px rgba(64,41,139,.25);
+--glow-mascot:0 0 120px 40px rgba(201,170,245,.35);
+--ease-soft:cubic-bezier(.22,.8,.3,1); /* @kind other */
+--dur-fast:140ms; /* @kind other */--dur-base:240ms; /* @kind other */
+}

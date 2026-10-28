@@ -1,0 +1,21 @@
+{
+  "name": "dara-in-tech",
+  "private": true,
+  "type": "module",
+  "description": "Official Dara in Tech website and Member Hub",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test:hub:legacy": "playwright test --project=hub-legacy"
+  },
+  "dependencies": {
+    "astro": "7.3.8"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0"
+  }
+}
