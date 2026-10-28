@@ -16,7 +16,7 @@ export const site = {
   name: 'Dara in Tech',
   tagline: 'A community for women to learn, connect, and grow in tech.',
   instagram: { handle: '@daraintech.id', url: 'https://www.instagram.com/daraintech.id/' },
-  contactEmail: null as string | null,   // not confirmed yet
+  contactEmail: 'daraintech.id@gmail.com' as string | null,   // confirmed by the team, 28 Oct 2026 (partnerships and general contact)
 
   hubUrl: '/hub/',
   // "Join our community" opens the WhatsApp group; the Member Hub (Talent Pool, roles, Mading) is a separate sign-up.

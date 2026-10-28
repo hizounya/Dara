@@ -228,8 +228,12 @@ const fmtDate = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('en-
           <h2 id="partner-title">Partner with us</h2>
           <!-- [draft] -->
           <p>We’d love to work with companies, communities, and organisations that want to open more doors for women in tech.</p>
+          {site.contactEmail && <p class="partner__how">DM us on Instagram or email <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.</p>}
         </div>
-        <Button href={site.instagram.url} variant="outline">Message us on Instagram</Button>
+        <div class="partner__ctas">
+          {site.contactEmail && <Button href={`mailto:${site.contactEmail}?subject=${encodeURIComponent('Partnership with Dara in Tech')}`}>Email us</Button>}
+          <Button href={site.instagram.url} variant="outline">DM us on Instagram</Button>
+        </div>
       </div>
     </div>
   </section>
@@ -357,6 +361,9 @@ const fmtDate = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('en-
   .partner h2 { font-size: var(--fs-subhead); color: var(--dit-violet-ink); margin-bottom: var(--space-1); }
   :global(:root[data-theme="dark"]) .partner { background: var(--surface-blush); color: var(--dit-lilac); }
   :global(:root[data-theme="dark"]) .partner h2 { color: var(--dit-lilac); }
+  .partner__how { margin-top: var(--space-1); font-size: var(--fs-small); }
+  .partner__how a { color: inherit; font-weight: var(--weight-bold); overflow-wrap: anywhere; }
+  .partner__ctas { display: flex; flex-wrap: wrap; gap: var(--space-1); }
   @media (min-width: 960px) { .partner { grid-template-columns: auto 1fr auto; align-items: center; padding: var(--space-4) var(--space-5); } }
 
   /* ---------- Join ---------- */
