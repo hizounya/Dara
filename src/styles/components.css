@@ -200,7 +200,7 @@ textarea.dit-input { min-height: 120px; resize: vertical; }
   .dit-hdr__menu { display: contents; }
   .dit-hdr__links { display: flex; gap: 2px; margin-inline: auto; }
   .dit-hdr__ctas { display: flex; align-items: center; gap: var(--space-1); order: 3; }
-  .dit-hdr__actions { order: 2; }
+  .dit-hdr__actions { order: 4; } /* theme toggle sits at the far right, after the actions */
   .dit-hdr__menu-btn { display: none; }
 }
 

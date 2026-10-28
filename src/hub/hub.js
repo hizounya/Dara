@@ -368,7 +368,7 @@ function hubBar(right){
 function shell(inner,withTabs){
   const tabs=withTabs?TABS.concat(S.admin?[['admin','Admin']]:[]):[];
   const name=(S.me&&S.me.full_name)||S.user.email;
-  return '<header class="dit-hdr hub-hdr">'+hubBar(themeBtn()+'<span class="hub-who"><span class="avatar avatar--sm" aria-hidden="true">'+esc(ini(name))+'</span><span class="who">'+esc(first(S.me&&S.me.full_name)||S.user.email)+'</span></span><button class="dit-btn dit-btn--ghost dit-btn--sm" data-act="signout">Sign out</button>')+
+  return '<header class="dit-hdr hub-hdr">'+hubBar('<span class="hub-who"><span class="avatar avatar--sm" aria-hidden="true">'+esc(ini(name))+'</span><span class="who">'+esc(first(S.me&&S.me.full_name)||S.user.email)+'</span></span><button class="dit-btn dit-btn--ghost dit-btn--sm" data-act="signout">Sign out</button>'+themeBtn())+
    (withTabs?'<nav class="hub-tabs tabs" aria-label="Member Hub"><div class="dit-container hub-tabs__in">'+tabs.map(t=>'<a class="tab" href="#/'+slugOf(t[0])+'" data-act="nav" data-v="'+t[0]+'"'+(S.view===t[0]?' aria-current="page"':'')+'>'+t[1]+'</a>').join('')+'</div></nav>':'')+
    '</header><main class="hub-main" id="main" tabindex="-1"><div class="dit-container hub-wrap">'+inner+'</div></main>';
 }
