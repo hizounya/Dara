@@ -1,0 +1,6 @@
+---
+// The brand gradient on a word. For display sizes only: the rose end is too light for body text.
+interface Props { as?: 'span' | 'strong' | 'em'; }
+const { as: Tag = 'span' } = Astro.props;
+---
+<Tag class="dit-grad-text"><slot /></Tag>

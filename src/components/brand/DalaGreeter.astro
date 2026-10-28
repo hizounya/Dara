@@ -1,0 +1,114 @@
+---
+// Interactive Dala for the hero: hover/tap gives a gentle lift and glow; clicking (or Enter/Space) opens a
+// speech bubble that cycles through short messages with links. Escape, the close button or a click elsewhere
+// closes it and focus returns to Dala. Official artwork only; motion follows the DS (soft ease, small rise,
+// no bounce) and is switched off by prefers-reduced-motion in base.css.
+import Mascot, { type Pose } from './Mascot.astro';
+
+export interface DalaMessage { text: string; link?: { href: string; label: string } }
+interface Props { messages: DalaMessage[]; pose?: Pose; width?: number; class?: string }
+const { messages, pose = 'wave', width = 440, class: cls } = Astro.props;
+---
+<div class:list={['dala', cls]} data-dala-greeter>
+  <div class="dala__bubble" id="dala-bubble" role="status" aria-live="polite" hidden>
+    <p class="dala__msg" data-dala-msg></p>
+    <a class="dala__link" data-dala-link hidden></a>
+    <button type="button" class="dala__close" data-dala-close aria-label="Close Dala’s message">
+      <svg class="dit-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+    </button>
+  </div>
+  <button type="button" class="dala__btn" aria-expanded="false" aria-controls="dala-bubble" aria-label="Say hi to Dala, the Dara in Tech elephant" data-dala-btn>
+    <Mascot pose={pose} width={width} eager alt="" />
+  </button>
+  <span class="dala__hint" aria-hidden="true" data-dala-hint>say hi →</span>
+  <script type="application/json" data-dala-messages set:html={JSON.stringify(messages)} />
+</div>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('[data-dala-greeter]')) {
+    const btn = root.querySelector<HTMLButtonElement>('[data-dala-btn]')!;
+    const bubble = root.querySelector<HTMLElement>('.dala__bubble')!;
+    const msg = root.querySelector<HTMLElement>('[data-dala-msg]')!;
+    const link = root.querySelector<HTMLAnchorElement>('[data-dala-link]')!;
+    const hint = root.querySelector<HTMLElement>('[data-dala-hint]');
+    const messages: { text: string; link?: { href: string; label: string } }[] =
+      JSON.parse(root.querySelector('[data-dala-messages]')!.textContent || '[]');
+    let i = -1;
+
+    const close = (refocus: boolean) => {
+      bubble.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+      if (refocus) btn.focus();
+    };
+    const next = () => {
+      i = (i + 1) % messages.length;
+      const m = messages[i];
+      msg.textContent = m.text;
+      if (m.link) { link.href = m.link.href; link.textContent = m.link.label + ' →'; link.hidden = false; }
+      else link.hidden = true;
+      bubble.hidden = false;
+      btn.setAttribute('aria-expanded', 'true');
+      hint?.remove();
+      root.classList.remove('is-talking'); void root.offsetWidth; root.classList.add('is-talking');
+    };
+
+    btn.addEventListener('click', next);
+    root.querySelector('[data-dala-close]')!.addEventListener('click', () => close(true));
+    link.addEventListener('click', () => close(false));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !bubble.hidden) close(true); });
+    document.addEventListener('click', (e) => { if (!bubble.hidden && !root.contains(e.target as Node)) close(false); });
+  }
+</script>
+
+<style>
+  .dala { position: relative; display: flex; flex-direction: column; align-items: flex-end; }
+  .dala__btn {
+    display: block; padding: 0; border: 0; background: none; cursor: pointer; border-radius: var(--radius-feature);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dala__btn :global(img) {
+    display: block; width: 100%; height: auto;
+    transition: transform var(--dur-base) var(--ease-soft), filter var(--dur-base) var(--ease-soft);
+  }
+  /* 1. Hover / focus / tap: a gentle lift with a soft orchid glow (DS: small rises, no bounce). */
+  .dala__btn:hover :global(img), .dala__btn:focus-visible :global(img), .dala.is-talking .dala__btn :global(img) {
+    transform: translateY(-8px);
+    filter: drop-shadow(0 18px 28px rgba(181, 130, 228, .45));
+  }
+  .dala__btn:active :global(img) { transform: translateY(-4px) scale(.98); }
+
+  /* 3. Speech bubble, pointing down at Dala. */
+  .dala__bubble {
+    position: absolute; z-index: 2; bottom: calc(100% - 40px); right: 12%; width: min(320px, 86vw);
+    display: grid; gap: var(--space-1); padding: var(--space-2) var(--space-5) var(--space-2) var(--space-3);
+    border: 2px solid transparent; border-radius: var(--radius-card);
+    background: linear-gradient(var(--surface-card), var(--surface-card)) padding-box, var(--grad-brand) border-box;
+    box-shadow: var(--shadow-soft); color: var(--text-body);
+    animation: dala-bubble var(--dur-base) var(--ease-soft);
+  }
+  .dala__bubble::after {
+    content: ""; position: absolute; bottom: -9px; right: 30%; width: 16px; height: 16px; transform: rotate(45deg);
+    background: var(--surface-card); border-right: 2px solid var(--dit-orchid); border-bottom: 2px solid var(--dit-orchid);
+  }
+  .dala__msg { font: 600 var(--fs-body) / 1.4 var(--font-display); color: var(--text-headline); }
+  .dala__link { font-weight: var(--weight-bold); font-size: var(--fs-small); }
+  .dala__close {
+    position: absolute; top: 6px; right: 6px; display: grid; place-items: center; width: 36px; height: 36px;
+    padding: 0; border: 0; border-radius: 50%; background: none; color: var(--text-muted);
+  }
+  .dala__close:hover { background: var(--surface-soft); color: var(--text-headline); }
+  @keyframes dala-bubble { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* Lowercase micro-UI hint, like the carousel's "swipe →"; removed after the first hello. */
+  .dala__hint {
+    position: absolute; left: 0; top: 30%; transform: translateX(-80%); padding: 6px 14px; border-radius: var(--radius-pill);
+    background: var(--surface-card); box-shadow: var(--shadow-card); pointer-events: none;
+    font: 600 var(--fs-small) / 1 var(--font-display); color: var(--text-headline);
+  }
+  /* Small screens: the bubble sits over the top of Dala so it never covers the hero buttons above. */
+  @media (max-width: 639px) {
+    .dala__bubble { bottom: auto; top: 0; left: auto; right: calc(var(--gutter) * 1.5); width: min(320px, calc(100vw - 2 * var(--gutter))); }
+    .dala__bubble::after { right: 45%; }
+    .dala__hint { transform: translateX(-40%); }
+  }
+</style>

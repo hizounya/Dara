@@ -1,0 +1,9 @@
+/* Open Sauce Sans — official display face (OFL, via Fontsource) */
+@font-face{font-family:"Open Sauce Sans";font-style:normal;font-weight:600;font-display:swap;src:url("../fonts/open-sauce-sans-600-normal.woff2") format("woff2")}
+@font-face{font-family:"Open Sauce Sans";font-style:normal;font-weight:700;font-display:swap;src:url("../fonts/open-sauce-sans-700-normal.woff2") format("woff2")}
+@font-face{font-family:"Open Sauce Sans";font-style:normal;font-weight:800;font-display:swap;src:url("../fonts/open-sauce-sans-800-normal.woff2") format("woff2")}
+/* Hanken Grotesk — open-source successor of HK Grotesk (SUBSTITUTE until HK Grotesk files are supplied) */
+@font-face{font-family:"Hanken Grotesk";font-style:normal;font-weight:400;font-display:swap;src:url("../fonts/hanken-grotesk-400-normal.woff2") format("woff2")}
+@font-face{font-family:"Hanken Grotesk";font-style:italic;font-weight:400;font-display:swap;src:url("../fonts/hanken-grotesk-400-italic.woff2") format("woff2")}
+@font-face{font-family:"Hanken Grotesk";font-style:normal;font-weight:500;font-display:swap;src:url("../fonts/hanken-grotesk-500-normal.woff2") format("woff2")}
+@font-face{font-family:"Hanken Grotesk";font-style:normal;font-weight:700;font-display:swap;src:url("../fonts/hanken-grotesk-700-normal.woff2") format("woff2")}

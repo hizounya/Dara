@@ -1,3 +1,8 @@
+-- !! WARNING (added 28 Oct 2026, see docs/03-security-review.md) !!
+-- Once the migrations in supabase/migrations/ have been applied, do NOT re-run this file on that database:
+-- it re-creates the older, wider access policies (Postgres combines policies with OR), silently undoing them.
+-- For a brand-new project: run this file once, then every migration in supabase/migrations/ in order.
+
 -- Dara in Tech Talent Hub: Supabase schema
 -- Run this once in Supabase: SQL Editor > New query > paste > Run.
 

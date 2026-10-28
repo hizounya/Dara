@@ -1,0 +1,78 @@
+/* Web layer on top of the design system tokens (tokens/ is never edited).
+   The DS is sized for a 1080px Instagram canvas; these values keep its proportions for screens.
+   See docs/02-architecture-plan.md §4. */
+
+:root {
+  /* Type scale: DS canvas ratios (body 38 → hero 150) mapped to a 17px body. */
+  --fs-body: 1.0625rem;
+  --fs-lead: 1.125rem;
+  --fs-small: .9375rem;
+  --fs-label: .8125rem;
+  --fs-subhead: clamp(1.25rem, 1.1rem + .6vw, 1.5rem);
+  --fs-section: clamp(2rem, 1.4rem + 3vw, 3.25rem);
+  --fs-title: clamp(2.25rem, 1.5rem + 3.6vw, 3.75rem);
+  --fs-hero: clamp(2.5rem, 1.6rem + 4.5vw, 4.25rem);
+
+  /* Radii: DS 16/28/44/64 scaled to a ~1200px viewport. */
+  --radius-control: 12px;
+  --radius-card: 20px;
+  --radius-feature: 28px;
+  --radius-frame: 40px;
+
+  /* Layout. Breakpoints (used literally in media queries): 640px, 960px, 1200px. */
+  --container: 1200px;
+  --gutter: 16px;
+  --header-h: 72px;
+
+  /* Semantic colours for the web, light theme (default). */
+  --page-bg: var(--bg-warm);
+  --link: var(--dit-violet);
+  --link-hover: var(--dit-pink);
+  --btn-primary-bg: var(--dit-violet);        /* white text 5.82:1 (decision: no gradient behind text) */
+  --btn-primary-fg: var(--dit-white);
+  --btn-plum-bg: var(--dit-plum);
+  --btn-plum-fg: var(--dit-white);
+  --border-control: var(--text-muted);         /* 5.80:1 on white, meets 3:1 for form controls */
+  --focus-ring: var(--dit-violet);
+  --status-error: #B0233B;                     /* approved; 6.67:1 on white */
+  --status-error-soft: #FBE1E6;
+  --status-success: #17694A;                   /* approved; 6.65:1 on white */
+  --status-success-soft: #DCF3E8;
+  --grad-text: var(--grad-brand);
+  --decor-opacity: 1;
+}
+@media (min-width: 640px) { :root { --gutter: 24px; } }
+@media (min-width: 960px) { :root { --gutter: 32px; } }
+
+/* Dark theme: opt-in only (default is light). The DS defines no dark palette, so these values are
+   derived from brand colours (plum for surfaces; lilac, periwinkle, lavender, rose for text).
+   Every text pair is AA or better; see docs/01-audit.md. */
+:root[data-theme="dark"] {
+  --bg-page: #1D1220;
+  --bg-warm: #1D1220;
+  --surface-card: #2A1A2E;
+  --surface-soft: #3A2850;
+  --surface-blush: #3A2235;
+  --text-headline: var(--dit-lilac);           /* 13.26:1 on cards */
+  --text-body: var(--dit-lilac);
+  --text-strong: var(--dit-white);
+  --text-muted: var(--dit-periwinkle);         /* 8.23:1 on cards */
+  --accent: var(--dit-rose);
+  --border-soft: #3A2850;
+  --shadow-card: 0 18px 40px -24px rgba(0, 0, 0, .6);
+  --shadow-soft: 0 24px 60px -20px rgba(0, 0, 0, .55);
+
+  --link: var(--dit-lavender);                 /* 7.94:1 on cards */
+  --link-hover: var(--dit-rose);
+  --btn-plum-bg: var(--dit-lilac);
+  --btn-plum-fg: var(--dit-plum);
+  --border-control: #8E7BB8;                   /* 4.41:1 on cards */
+  --focus-ring: var(--dit-periwinkle);
+  --status-error: #FF93A6;                     /* 7.76:1 on cards */
+  --status-error-soft: #3F1F29;
+  --status-success: #72D6A8;                   /* 9.26:1 on cards */
+  --status-success-soft: #173A2C;
+  --grad-text: linear-gradient(90deg, var(--dit-periwinkle) 0%, var(--dit-orchid) 55%, var(--dit-rose) 100%);
+  --decor-opacity: .45;
+  color-scheme: dark;
+}

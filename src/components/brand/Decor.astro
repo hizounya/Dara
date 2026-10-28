@@ -1,0 +1,16 @@
+---
+// Official circuit and skyline cut-outs from the carousel. Decorative only: placed at edges, never behind copy.
+// Position it from the parent with the `style` prop (the parent must be position: relative).
+import { Image } from 'astro:assets';
+import cornerRight from '../../assets/brand/decor/circuit-corner-top-right.png';
+import cornerLeft from '../../assets/brand/decor/circuit-corner-top-left.png';
+import pins from '../../assets/brand/decor/circuit-pins-vertical.png';
+import skyline from '../../assets/brand/decor/city-skyline.png';
+
+const SRC = { 'corner-top-right': cornerRight, 'corner-top-left': cornerLeft, pins, skyline };
+interface Props { variant: keyof typeof SRC; width: number; style?: string; class?: string; }
+const { variant, width, style, class: cls } = Astro.props;
+// The skyline cut-out carries a sliver of other carousel artwork on its right edge; trim it until a clean file is supplied.
+const trim = variant === 'skyline' ? 'clip-path: inset(0 5% 0 0);' : '';
+---
+<Image src={SRC[variant]} width={width} densities={[1, 2]} alt="" aria-hidden="true" class:list={['dit-decor', cls]} style={trim + (style ?? '')} />

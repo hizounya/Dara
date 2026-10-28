@@ -1,0 +1,21 @@
+---
+// Status message. Always carries a title and an icon so meaning never depends on colour alone.
+// Errors are announced immediately (role="alert"); success and info politely (role="status").
+interface Props { tone?: 'error' | 'success' | 'info'; title: string; }
+const { tone = 'info', title } = Astro.props;
+const role = tone === 'error' ? 'alert' : 'status';
+---
+<div class:list={['dit-alert', `dit-alert--${tone}`]} role={role}>
+  <svg class="dit-icon" viewBox="0 0 20 20" aria-hidden="true">
+    <circle cx="10" cy="10" r="8.25" fill="none" stroke="currentColor" stroke-width="1.75" />
+    {tone === 'error' && <path d="M10 5.5v5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />}
+    {tone === 'error' && <circle cx="10" cy="14.2" r="1.2" />}
+    {tone === 'success' && <path d="M6.2 10.3l2.6 2.5 5-5.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />}
+    {tone === 'info' && <circle cx="10" cy="6.3" r="1.2" />}
+    {tone === 'info' && <path d="M10 9.2v5.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />}
+  </svg>
+  <div>
+    <strong class="dit-alert__title">{title}</strong>
+    {Astro.slots.has('default') && <span class="dit-alert__body"><slot /></span>}
+  </div>
+</div>

@@ -1,0 +1,23 @@
+---
+// Sign up for the Member Hub: the same app as /hub/ in sign-up mode (data-mode="signup").
+// Once the email code is confirmed it hands over to /hub/, which continues with profile setup.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteFooter from '../components/layout/SiteFooter.astro';
+import { hubImages } from '../hub/images';
+import '../hub/hub.css';
+
+const img = await hubImages();
+---
+<BaseLayout title="Sign up · Member Hub · Dara in Tech" description="Create your Dara in Tech Member Hub account: one profile, roles from the community with match scores, and the Mading board.">
+  <a class="dit-skip" href="#main">Skip to content</a>
+  <div id="app" data-mode="signup" data-logo={img.logo} data-dala={img.dala} data-dala-empty={img.poses.read} data-poses={JSON.stringify(img.poses)}>
+    <div class="hub-loading"><img src={img.poses.read} alt="" width="120" height="106" /><p>Loading sign up…</p></div>
+  </div>
+  <div id="modal-root"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <noscript><p style="padding:0 16px;text-align:center">The Member Hub needs JavaScript to run.</p></noscript>
+  <SiteFooter />
+  <script>
+    import '../hub/hub.js';
+  </script>
+</BaseLayout>

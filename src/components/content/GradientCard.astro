@@ -1,0 +1,9 @@
+---
+// DS GradientCard: white card with a gradient outline. "soft" is a quiet hairline card for dense content,
+// "frame" is the thick pastel bezel from the carousel's closing slide. `float` adds the violet card shadow.
+interface Props { variant?: 'default' | 'soft' | 'frame'; float?: boolean; as?: 'div' | 'article' | 'section' | 'li'; class?: string; }
+const { variant = 'default', float = false, as: Tag = 'div', class: cls } = Astro.props;
+---
+<Tag class:list={['dit-card', variant !== 'default' && `dit-card--${variant}`, { 'dit-card--float': float }, cls]}>
+  <slot />
+</Tag>

@@ -1,0 +1,186 @@
+---
+// Component reference for contributors (not linked, noindex). Everything here follows the theme toggle.
+// Copy comes from the official carousel; anything marked "Sample" is placeholder text for layout only.
+import PageLayout from '../layouts/PageLayout.astro';
+import Mascot, { type Pose } from '../components/brand/Mascot.astro';
+import GradientText from '../components/brand/GradientText.astro';
+import Decor from '../components/brand/Decor.astro';
+import Button from '../components/content/Button.astro';
+import Tag from '../components/content/Tag.astro';
+import Icon, { type IconName } from '../components/content/Icon.astro';
+import IconOrb from '../components/content/IconOrb.astro';
+import GradientCard from '../components/content/GradientCard.astro';
+import FeatureRow from '../components/content/FeatureRow.astro';
+import DefinitionCard from '../components/content/DefinitionCard.astro';
+import Alert from '../components/content/Alert.astro';
+
+const semantic = [
+  ['--page-bg', 'Page'], ['--surface-card', 'Card'], ['--surface-soft', 'Soft surface'], ['--surface-blush', 'Blush surface'],
+  ['--text-headline', 'Headline'], ['--text-muted', 'Muted text'], ['--link', 'Link'], ['--btn-primary-bg', 'Primary button'],
+  ['--status-error', 'Error'], ['--status-success', 'Success'],
+];
+const palette = [
+  ['--dit-lavender', 'Signature Lavender', '#AEAFF2'], ['--dit-plum', 'Deep Plum', '#331C33'], ['--dit-lilac', 'Soft Lilac', '#E9E5FA'],
+  ['--dit-blush', 'Blush Pink', '#F7DEEB'], ['--dit-pink', 'Vibrant Pink', '#DE67A6'], ['--dit-ivory', 'Warm Ivory', '#FAF8F5'],
+  ['--dit-violet-ink', 'Violet ink', '#40298B'], ['--dit-violet', 'Violet', '#6A4CD5'], ['--dit-orchid', 'Orchid', '#B582E4'], ['--dit-rose', 'Rose', '#F2A4D2'],
+];
+const icons: IconName[] = ['bullhorn', 'screwdriver-wrench', 'comments', 'handshake', 'users', 'heart', 'heart-outline', 'calendar-days',
+  'location-dot', 'laptop-code', 'lightbulb', 'graduation-cap', 'briefcase', 'star', 'rocket', 'book-open', 'arrow-right'];
+const poses: Pose[] = ['wave', 'read', 'announce', 'thumbs-up', 'cheer', 'excited', 'trophy', 'comfort'];
+---
+<PageLayout title="Styleguide · Dara in Tech" description="Component reference for the Dara in Tech website." noindex>
+  <div class="dit-container sg">
+    <section class="sg-intro">
+      <h1>Design <GradientText>foundation</GradientText></h1>
+      <p class="dit-lead">Tokens come straight from the Dara in Tech design system. Light is the default; switch to dark with the moon button. Everything below is live.</p>
+    </section>
+
+    <section aria-labelledby="sg-colors">
+      <h2 id="sg-colors" class="sg-h">Colour</h2>
+      <h3 class="sg-sub">Semantic (follows the theme)</h3>
+      <ul class="sg-swatches">
+        {semantic.map(([token, name]) => <li><span class="sg-chip" style={`background:var(${token})`}></span><b>{name}</b><code>{token}</code></li>)}
+      </ul>
+      <h3 class="sg-sub">Brand palette (fixed)</h3>
+      <ul class="sg-swatches">
+        {palette.map(([token, name, hex]) => <li><span class="sg-chip" style={`background:var(${token})`}></span><b>{name}</b><code>{hex}</code></li>)}
+      </ul>
+    </section>
+
+    <section aria-labelledby="sg-type">
+      <h2 id="sg-type" class="sg-h">Typography</h2>
+      <div class="sg-stack">
+        <p class="dit-hero-title" style="font-family:var(--font-display);color:var(--text-headline);letter-spacing:var(--tracking-display)">Hi, we’re<br /><GradientText>Dara in Tech</GradientText></p>
+        <h1>Why we exist</h1>
+        <h2>What we do</h2>
+        <h3>Sharing Sessions</h3>
+        <p class="dit-kicker">Because every woman has a place in tech.</p>
+        <p class="dit-lead">A community for women to learn, connect, and grow in tech.</p>
+        <p>Exploring tech shouldn’t feel lonely. We’re building a closer, more inclusive space for women, no tech background required. <a href="#sg-type">This is a link.</a></p>
+        <p class="dit-muted" style="font-size:var(--fs-small)">Small muted text for captions and helper copy.</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="sg-buttons">
+      <h2 id="sg-buttons" class="sg-h">Buttons</h2>
+      <div class="sg-row">
+        <Button href="#sg-buttons" size="lg" arrow>Join our community</Button>
+        <Button href="#sg-buttons" size="lg" variant="outline">Explore Talent Hub</Button>
+      </div>
+      <div class="sg-row">
+        <Button>Primary</Button>
+        <Button variant="outline">Outline</Button>
+        <Button variant="plum">Plum</Button>
+        <Button variant="ghost">Ghost</Button>
+        <Button disabled>Disabled</Button>
+      </div>
+      <div class="sg-row">
+        <Button size="sm">Small</Button>
+        <Button size="sm" variant="outline">Small outline</Button>
+        <Button size="sm" variant="ghost">Small ghost</Button>
+      </div>
+    </section>
+
+    <section aria-labelledby="sg-tags">
+      <h2 id="sg-tags" class="sg-h">Tags and icons</h2>
+      <div class="sg-row">
+        <Tag>Workshop</Tag><Tag tone="blush">Networking</Tag><Tag tone="pink">New</Tag><Tag tone="plum">Members only</Tag>
+        <Tag><Icon name="calendar-days" /> Sample date</Tag>
+      </div>
+      <ul class="sg-icons">
+        {icons.map((name) => <li><IconOrb icon={name} size={56} /><code>{name}</code></li>)}
+      </ul>
+      <div class="sg-row"><IconOrb icon="heart-outline" variant="gradient" size={88} /><IconOrb icon="handshake" size={88} /></div>
+    </section>
+
+    <section aria-labelledby="sg-cards">
+      <h2 id="sg-cards" class="sg-h">Cards</h2>
+      <div class="sg-grid">
+        <GradientCard float>
+          <IconOrb icon="heart-outline" variant="gradient" size={72} />
+          <p class="dit-kicker" style="margin-top:var(--space-3)">Exploring tech shouldn’t feel lonely.</p>
+          <p style="margin-top:var(--space-1)">We’re building a closer, more inclusive space for women, no tech background required.</p>
+        </GradientCard>
+        <DefinitionCard word="da • ra" meta="noun • indonesian" meaning="A young woman." />
+        <GradientCard variant="soft">
+          <h3>Soft card</h3>
+          <p style="margin-top:var(--space-1)">Sample text. A quieter card for dense content such as lists, Hub panels and forms.</p>
+        </GradientCard>
+        <GradientCard variant="frame">
+          <p class="dit-kicker">There’s a place for you at Dara.</p>
+          <p style="margin-top:var(--space-1)">Just exploring tech? Switching careers? Or already in the industry?</p>
+        </GradientCard>
+      </div>
+      <h3 class="sg-sub">Feature rows</h3>
+      <div class="sg-stack">
+        <FeatureRow icon="bullhorn" title="Sharing Sessions">Sample description, final copy to be confirmed.</FeatureRow>
+        <FeatureRow icon="screwdriver-wrench" title="Mini Workshop">Sample description, final copy to be confirmed.</FeatureRow>
+        <FeatureRow icon="comments" title="Networking Nights" />
+        <FeatureRow icon="handshake" title="Project Collabs" />
+      </div>
+    </section>
+
+    <section aria-labelledby="sg-forms">
+      <h2 id="sg-forms" class="sg-h">Forms and status</h2>
+      <form class="sg-form" onsubmit="return false">
+        <div class="dit-field">
+          <label class="dit-label" for="sg-email">Email</label>
+          <input class="dit-input" id="sg-email" type="email" placeholder="you@email.com" autocomplete="email" />
+          <span class="dit-hint">We send you a 6-digit code.</span>
+        </div>
+        <div class="dit-field">
+          <label class="dit-label" for="sg-city">City</label>
+          <input class="dit-input" id="sg-city" type="text" aria-invalid="true" aria-describedby="sg-city-err" />
+          <span class="dit-field__error" id="sg-city-err">Enter your city.</span>
+        </div>
+        <div class="dit-field">
+          <label class="dit-label" for="sg-level">Level you are aiming for</label>
+          <select class="dit-input" id="sg-level"><option>Choose one</option><option>Junior</option></select>
+        </div>
+        <div class="dit-field">
+          <label class="dit-label" for="sg-bio">Short bio</label>
+          <textarea class="dit-input" id="sg-bio" placeholder="What are you working towards?"></textarea>
+        </div>
+        <label class="dit-check"><input type="checkbox" /><span>Show me in the Talent Pool</span></label>
+      </form>
+      <div class="sg-stack" style="margin-top:var(--space-4)">
+        <Alert tone="error" title="That code didn’t work.">Request a new one and try again.</Alert>
+        <Alert tone="success" title="Profile saved.">Your match scores are updated.</Alert>
+        <Alert tone="info" title="Heads up.">Sample informational message.</Alert>
+      </div>
+    </section>
+
+    <section aria-labelledby="sg-dala">
+      <h2 id="sg-dala" class="sg-h">Dala</h2>
+      <p class="dit-muted">Official poses only. Pick the pose that matches the message.</p>
+      <ul class="sg-poses">
+        {poses.map((pose) => <li><Mascot pose={pose} width={200} alt={`Dala, ${pose} pose`} /><code>{pose}</code></li>)}
+      </ul>
+      <div class="sg-decor">
+        <Decor variant="corner-top-right" width={260} style="top:0;right:0" />
+        <Decor variant="skyline" width={360} style="bottom:0;left:0" />
+        <p class="dit-muted">Decor sits at edges only.</p>
+      </div>
+    </section>
+  </div>
+</PageLayout>
+
+<style>
+  .sg { display: flex; flex-direction: column; gap: var(--space-7); padding-block: var(--space-6) var(--space-8); }
+  .sg-intro { display: flex; flex-direction: column; gap: var(--space-2); }
+  .sg-h { font-size: var(--fs-section); margin-bottom: var(--space-3); }
+  .sg-sub { margin: var(--space-4) 0 var(--space-2); }
+  .sg-stack { display: flex; flex-direction: column; gap: var(--space-2); }
+  .sg-row { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin-bottom: var(--space-2); }
+  .sg-grid { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+  .sg-swatches, .sg-icons, .sg-poses { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+  .sg-swatches { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .sg-swatches li { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-small); }
+  .sg-chip { height: 64px; border-radius: var(--radius-control); box-shadow: inset 0 0 0 1px var(--border-soft); }
+  code { font-size: var(--fs-label); color: var(--text-muted); }
+  .sg-icons { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); margin-block: var(--space-3); }
+  .sg-icons li, .sg-poses li { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .sg-poses { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); margin-top: var(--space-3); }
+  .sg-form { display: grid; gap: var(--space-3); max-width: 560px; }
+  .sg-decor { position: relative; overflow: hidden; min-height: 220px; margin-top: var(--space-4); padding: var(--space-3); border-radius: var(--radius-feature); background: var(--surface-card); display: grid; place-items: center; }
+</style>

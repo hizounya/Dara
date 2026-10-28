@@ -1,0 +1,392 @@
+---
+// Homepage. Introduces the community first; the calls to action come after the story.
+// Copy: hero lines from the official intro carousel; About, meaning, vision, mission, What we do, values,
+// audience and closing CTA supplied by the team (28 Oct 2026). Lines marked [draft] await the team's review.
+import PageLayout from '../layouts/PageLayout.astro';
+import Mascot from '../components/brand/Mascot.astro';
+import DalaGreeter, { type DalaMessage } from '../components/brand/DalaGreeter.astro';
+import GradientText from '../components/brand/GradientText.astro';
+import Decor from '../components/brand/Decor.astro';
+import Button from '../components/content/Button.astro';
+import Tag from '../components/content/Tag.astro';
+import Icon from '../components/content/Icon.astro';
+import IconOrb from '../components/content/IconOrb.astro';
+import DefinitionCard from '../components/content/DefinitionCard.astro';
+import { site, events } from '../data/site';
+
+const pillars = [
+  { icon: 'book-open', title: 'Learn Together', text: 'From hands-on workshops to conversations with industry professionals, we make learning about technology more accessible, practical, and approachable.' },
+  { icon: 'comments', title: 'Connect Meaningfully', text: 'We bring women together through community gatherings, networking sessions, and shared experiences that turn introductions into genuine connections.' },
+  { icon: 'rocket', title: 'Grow With Opportunities', text: 'We help our community discover opportunities, exchange knowledge, explore career paths, and take meaningful steps toward their goals.' },
+] as const;
+const formats = ['Sharing Sessions', 'Mini Workshop', 'Networking Nights', 'Project Collabs'];
+const values = [
+  { title: 'Belonging', text: 'You don’t need a tech background to belong in tech.' },
+  { title: 'Curiosity', text: 'Every question, idea, and new beginning deserves room to grow.' },
+  { title: 'Collaboration', text: 'Great things happen when women share knowledge and support one another.' },
+  { title: 'Growth', text: 'Progress looks different for everyone. We’re here to celebrate every step.' },
+];
+const audience = [
+  { icon: 'lightbulb', text: 'The curious beginners.' },
+  { icon: 'briefcase', text: 'The career switchers.' },
+  { icon: 'graduation-cap', text: 'The students figuring things out.' },
+  { icon: 'star', text: 'The women already making their mark in tech.' },
+] as const;
+const hubPoints = [
+  { icon: 'users', title: 'One profile for the community', text: 'Share your skills and goals once. You decide whether other members can see you in the Talent Pool.' },
+  { icon: 'star', title: 'Roles that fit you', text: 'Members post roles, and each one shows a match score with the reasons behind it.' },
+  { icon: 'bullhorn', title: 'The Mading board', text: 'Events, certifications, scholarships and tips shared by the community.' },
+] as const;
+
+// What Dala says when clicked in the hero, in turn. [draft] copy; each line points somewhere useful.
+const dalaSays: DalaMessage[] = [
+  { text: 'Hi, I’m Dala! Welcome to Dara in Tech.', link: { href: '#about', label: 'Meet the community' } },
+  { text: 'Curious about tech? You don’t need a tech background to belong here.', link: { href: '#programs', label: 'See what we do' } },
+  { text: 'Looking for your next role? Members share opportunities in the Talent Hub.', link: { href: '#talent-hub', label: 'Explore Talent Hub' } },
+  { text: 'Ready to meet your people? Come say hi in our community.', link: { href: site.joinUrl, label: 'Join our community' } },
+];
+
+const today = new Date().toISOString().slice(0, 10);
+const upcoming = events.filter((e) => e.date >= today).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 3);
+const fmtDate = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+<PageLayout title="Dara in Tech · A community for women in tech" description={site.tagline + ' Find your people and your place in tech.'}>
+  <script is:inline slot="head">
+    // Sign-in links emailed before the Hub moved to /hub/ return to the homepage; forward them with the token intact.
+    if (/(^#|&)(access_token|error_description)=/.test(location.hash) || /[?&]code=/.test(location.search)) location.replace('/hub/' + location.search + location.hash);
+  </script>
+
+  <!-- 1. Hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <Decor variant="corner-top-right" width={420} class="hero__circuit" />
+    <div class="dit-container hero__grid">
+      <div class="hero__copy">
+        <p class="hero__hello">Hi, we’re <strong>Dara in Tech</strong></p>
+        <h1 id="hero-title" class="dit-hero-title hero__title">A new generation of women. <GradientText>A new era of tech.</GradientText></h1>
+        <p class="hero__lead">{site.tagline}</p>
+        <div class="hero__ctas">
+          <Button href={site.joinUrl} size="lg" arrow>Join our community<span class="dit-visually-hidden"> on {site.joinVia}</span></Button>
+          <Button href="#talent-hub" size="lg" variant="outline">Explore Talent Hub</Button>
+        </div>
+      </div>
+      <div class="hero__art">
+        <Decor variant="skyline" width={360} class="hero__skyline" />
+        <DalaGreeter messages={dalaSays} pose="wave" width={440} class="hero__dala" />
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. About -->
+  <section id="about" class="dit-section" aria-labelledby="about-title">
+    <div class="dit-container split">
+      <div class="prose">
+        <h2 id="about-title">Find your people. Find your place in tech.</h2>
+        <p class="dit-lead">Technology is full of possibilities, but finding your way into it isn’t always easy.</p>
+        <p>Dara in Tech is a community bringing women together to explore technology, exchange ideas, build meaningful connections, and grow alongside one another.</p>
+        <p class="dit-kicker">Whether you’re taking your first step into tech or already building your career, there’s a place for you here.</p>
+      </div>
+      <div class="art art--blob">
+        <Mascot pose="comfort" width={380} alt="Dala hugging a heart" />
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. The meaning behind Dara -->
+  <section class="dit-section dit-section--tint" aria-labelledby="meaning-title">
+    <div class="dit-container split split--even">
+      <div class="meaning__card">
+        <h2 id="meaning-title">The meaning behind <GradientText>Dara</GradientText></h2>
+        <DefinitionCard word="da·ra" meta="noun · Indonesian" meaning="A young woman." />
+      </div>
+      <div class="prose">
+        <p class="dit-lead">“Dara” is an Indonesian word for a young woman. We chose it because we wanted a name that feels close to home, and a community where women feel the same sense of belonging.</p>
+        <p>To us, Dara is not about age or where you are in your career. It’s about every woman who has ever been curious about tech, wanted to try something new, or wished she had someone to figure things out with.</p>
+        <p class="dit-kicker">Because women deserve more than a place in tech. They deserve a community that helps them thrive in it.</p>
+      </div>
+    </div>
+
+    <!-- 4. Vision and mission (same band: they complete the story above) -->
+    <div class="dit-container">
+      <div class="cards-2 vm-row">
+      <article class="dit-card dit-card--float vm">
+        <IconOrb icon="star" variant="gradient" size={64} />
+        <h2 class="vm__title">Our vision</h2>
+        <p class="vm__text">A future where every woman feels she belongs in tech and has the opportunity to thrive.</p>
+      </article>
+      <article class="dit-card dit-card--float vm">
+        <IconOrb icon="rocket" variant="gradient" size={64} />
+        <h2 class="vm__title">Our mission</h2>
+        <p class="vm__text">To make technology more accessible to women by creating opportunities to learn, connect, collaborate, and grow together.</p>
+      </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. What we do -->
+  <section id="programs" class="dit-section" aria-labelledby="programs-title">
+    <div class="dit-container">
+      <div class="dit-section__head dit-section__head--center">
+        <h2 id="programs-title">What we do</h2>
+      </div>
+      <ul class="cards-3" role="list">
+        {pillars.map((p) => (
+          <li class="dit-card pillar">
+            <IconOrb icon={p.icon} size={64} />
+            <h3>{p.title}</h3>
+            <p>{p.text}</p>
+          </li>
+        ))}
+      </ul>
+      <div class="formats">
+        <p class="formats__label">Our formats</p>
+        <ul class="formats__list" role="list">{formats.map((f) => <li><Tag>{f}</Tag></li>)}</ul>
+      </div>
+
+      <div id="events" class="events">
+        <h3>Upcoming events</h3>
+        {upcoming.length > 0 ? (
+          <ul class="cards-3" role="list">
+            {upcoming.map((e) => (
+              <li class="dit-card dit-card--soft event">
+                <Tag><Icon name="calendar-days" /> {fmtDate(e.date)}</Tag>
+                <h4>{e.title}</h4>
+                <p class="dit-muted"><Icon name="location-dot" /> {e.location}</p>
+                <p>{e.summary}</p>
+                {e.link && <Button href={e.link} variant="outline" size="sm">Details</Button>}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div class="dit-card dit-card--soft events__empty">
+            <IconOrb icon="calendar-days" size={56} />
+            <div>
+              <p class="dit-kicker">No upcoming events announced yet.</p>
+              <p class="dit-muted">We share new events on Instagram first.</p>
+            </div>
+            <Button href={site.instagram.url} variant="outline" size="sm">Follow {site.instagram.handle}</Button>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. What we believe -->
+  <section class="dit-section dit-section--tint" aria-labelledby="values-title">
+    <div class="dit-container">
+      <div class="dit-section__head dit-section__head--center">
+        <h2 id="values-title">What we believe</h2>
+      </div>
+      <ul class="cards-4" role="list">
+        {values.map((v, i) => (
+          <li class="dit-card dit-card--soft value">
+            <span class="value__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <h3>{v.title}</h3>
+            <p>{v.text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- 7. Who is Dara for? -->
+  <section class="dit-section" aria-labelledby="who-title">
+    <div class="dit-container">
+      <div class="dit-section__head dit-section__head--center">
+        <h2 id="who-title">Who is <GradientText>Dara</GradientText> for?</h2>
+      </div>
+      <ul class="cards-4 who" role="list">
+        {audience.map((a) => (
+          <li class="who__item"><IconOrb icon={a.icon} size={56} /><p>{a.text}</p></li>
+        ))}
+      </ul>
+      <p class="dit-kicker who__close">Wherever you are in your journey, you’re welcome here.</p>
+    </div>
+  </section>
+
+  <!-- 8. Talent Hub -->
+  <section id="talent-hub" class="dit-section" aria-labelledby="hub-title">
+    <div class="dit-container">
+      <div class="panel">
+        <div class="panel__copy">
+          <h2 id="hub-title">Talent Hub</h2>
+          <!-- [draft] describes existing Hub features only -->
+          <p class="dit-lead">Our member space for careers: keep one profile, find roles that fit you, and see what the community is sharing.</p>
+          <ul class="hub-points" role="list">
+            {hubPoints.map((h) => (
+              <li><IconOrb icon={h.icon} size={48} /><div><h3 class="hub-points__title">{h.title}</h3><p>{h.text}</p></div></li>
+            ))}
+          </ul>
+          <div class="panel__ctas">
+            <Button href={site.signupUrl}>Sign up for the Member Hub</Button>
+            <Button href={site.hubUrl} variant="ghost">Member login</Button>
+            <span class="dit-muted">Email code, no password needed.</span>
+          </div>
+        </div>
+        <div class="panel__art">
+          <Mascot pose="thumbs-up" width={340} alt="Dala giving a thumbs up" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Partner with us -->
+  <section id="partner" class="dit-section dit-section--tight" aria-labelledby="partner-title">
+    <div class="dit-container">
+      <div class="partner">
+        <IconOrb icon="handshake" size={72} />
+        <div class="partner__copy">
+          <h2 id="partner-title">Partner with us</h2>
+          <!-- [draft] -->
+          <p>We’d love to work with companies, communities, and organisations that want to open more doors for women in tech.</p>
+          {site.contactEmail && <p class="partner__how">DM us on Instagram or email <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.</p>}
+        </div>
+        <div class="partner__ctas">
+          {site.contactEmail && <Button href={`mailto:${site.contactEmail}?subject=${encodeURIComponent('Partnership with Dara in Tech')}`}>Email us</Button>}
+          <Button href={site.instagram.url} variant="outline">DM us on Instagram</Button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. Be part of Dara -->
+  <section id="join" class="dit-section" aria-labelledby="join-title">
+    <div class="dit-container">
+      <div class="dit-card dit-card--frame join">
+        <div class="join__copy">
+          <h2 id="join-title">Be part of <GradientText>Dara</GradientText></h2>
+          <p class="dit-kicker">Your next chapter in tech doesn’t have to be a solo journey.</p>
+          <p class="dit-lead">Come learn something new, meet your people, and discover where tech can take you.</p>
+          <div class="join__cta"><Button href={site.joinUrl} size="lg" arrow>Join our community<span class="dit-visually-hidden"> on {site.joinVia}</span></Button><p class="dit-muted join__note">Opens our {site.joinVia} community.</p></div>
+        </div>
+        <Mascot pose="excited" width={320} alt="Dala with arms open, inviting you in" class="join__dala" />
+      </div>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  /* ---------- Hero ---------- */
+  .hero { position: relative; overflow: hidden; padding-block: var(--space-5) 0; }
+  .hero__grid { position: relative; z-index: 1; display: grid; gap: var(--space-3); }
+  .hero__copy { display: flex; flex-direction: column; gap: var(--space-3); }
+  .hero__hello { font: var(--weight-bold) var(--fs-lead) / 1.2 var(--font-display); color: var(--text-headline); letter-spacing: -.01em; }
+  .hero__hello strong { color: var(--link); }
+  /* Longer headline than the carousel greeting, so one step smaller than the hero size to stay within 3–4 lines. */
+  .hero__title { font-size: clamp(2.25rem, 1.3rem + 3.6vw, 3.75rem); line-height: 1.02; max-width: 15ch; }
+  .hero__title :global(.dit-grad-text) { display: inline-block; }
+  .hero__lead { font-size: var(--fs-subhead); line-height: 1.35; max-width: 30ch; color: var(--text-body); }
+  .hero__ctas { display: grid; gap: var(--space-2); margin-top: var(--space-1); }
+  .hero__art { position: relative; display: flex; justify-content: flex-end; align-items: flex-end; min-height: 260px; }
+  .hero :global(.hero__dala) { position: relative; z-index: 1; width: min(76vw, 440px); margin-right: calc(var(--gutter) * -0.5); }
+  .hero :global(.hero__circuit) { top: 0; right: 0; width: min(50vw, 420px); }
+  /* On narrow screens the circuit would sit behind the headline; decor stays at edges only. */
+  @media (max-width: 639px) { .hero :global(.hero__circuit) { display: none; } }
+  .hero :global(.hero__skyline) { bottom: 0; left: 0; width: min(70vw, 360px); opacity: calc(var(--decor-opacity) * .7); }
+  @media (min-width: 560px) { .hero__ctas { display: flex; flex-wrap: wrap; } }
+  @media (min-width: 960px) {
+    .hero { padding-top: var(--space-6); }
+    .hero__grid { grid-template-columns: 1.1fr 1fr; align-items: end; }
+    .hero__copy { padding-bottom: var(--space-7); }
+    .hero__art { min-height: 480px; }
+  }
+
+  /* ---------- Shared section layouts ---------- */
+  .split { display: grid; gap: var(--space-5); align-items: center; }
+  .prose { display: flex; flex-direction: column; gap: var(--space-2); max-width: 60ch; }
+  .prose h2 { margin-bottom: var(--space-1); }
+  .art { display: flex; justify-content: center; }
+  .art :global(img) { width: min(70vw, 380px); }
+  .art--blob { position: relative; }
+  .art--blob::before {
+    content: ""; position: absolute; inset: 8% 6%; border-radius: 50%;
+    background: var(--grad-blob); opacity: calc(var(--decor-opacity) * .9); z-index: 0;
+  }
+  .art--blob :global(img) { position: relative; z-index: 1; }
+  @media (min-width: 960px) {
+    .split { grid-template-columns: 1.2fr 1fr; gap: var(--space-7); }
+    .split--even { grid-template-columns: 1fr 1fr; }
+  }
+
+  .cards-2, .cards-3, .cards-4 { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+  @media (min-width: 720px) { .cards-2 { grid-template-columns: repeat(2, 1fr); } .cards-4 { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 960px) { .cards-3 { grid-template-columns: repeat(3, 1fr); } .cards-4 { grid-template-columns: repeat(4, 1fr); } }
+
+  /* ---------- Meaning ---------- */
+  .meaning__card { display: flex; flex-direction: column; gap: var(--space-3); }
+
+  /* ---------- Vision & mission ---------- */
+  .vm-row { margin-top: var(--space-6); }
+  .vm { display: flex; flex-direction: column; gap: var(--space-2); }
+  .vm__title { font-size: var(--fs-subhead); }
+  .vm__text { font-size: var(--fs-lead); }
+
+  /* ---------- What we do ---------- */
+  .pillar { display: flex; flex-direction: column; gap: var(--space-2); }
+  .formats { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-2); margin-top: var(--space-4); }
+  .formats__label { font-weight: var(--weight-bold); color: var(--text-muted); }
+  .formats__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-1); justify-content: center; }
+  .events { margin-top: var(--space-6); display: flex; flex-direction: column; gap: var(--space-3); }
+  .events h3 { text-align: center; }
+  .events__empty { display: grid; gap: var(--space-2); justify-items: center; text-align: center; max-width: 640px; margin-inline: auto; }
+  .event { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); }
+  @media (min-width: 720px) {
+    .events__empty { grid-template-columns: auto 1fr auto; align-items: center; justify-items: start; text-align: left; }
+  }
+
+  /* ---------- Values ---------- */
+  .value { display: flex; flex-direction: column; gap: var(--space-1); }
+  .value__num { font: var(--weight-bold) var(--fs-lead) / 1 var(--font-display); color: var(--dit-violet); }
+  :global(:root[data-theme="dark"]) .value__num { color: var(--dit-periwinkle); }
+
+  /* ---------- Who it's for ---------- */
+  .who { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4) var(--space-2); }
+  @media (min-width: 960px) { .who { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .who__item { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); text-align: center; }
+  .who__item p { font: 600 var(--fs-lead) / 1.35 var(--font-display); color: var(--text-headline); }
+  @media (max-width: 639px) { .who__item p { font-size: var(--fs-body); } }
+  .who__close { text-align: center; margin-top: var(--space-4); font-size: var(--fs-subhead); }
+
+  /* ---------- Talent Hub panel ---------- */
+  .panel {
+    display: grid; gap: var(--space-4); padding: var(--space-4) var(--space-3);
+    border-radius: var(--radius-frame); background: var(--surface-soft);
+  }
+  .panel__copy { display: flex; flex-direction: column; gap: var(--space-3); }
+  .hub-points { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+  .hub-points li { display: grid; grid-template-columns: auto 1fr; gap: var(--space-2); align-items: start; }
+  .hub-points__title { font-size: var(--fs-lead); margin-bottom: 2px; }
+  .panel__ctas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+  .panel__art { display: flex; justify-content: center; align-items: flex-end; }
+  .panel__art :global(img) { width: min(60vw, 340px); }
+  @media (min-width: 960px) {
+    .panel { grid-template-columns: 1.4fr 1fr; padding: var(--space-6); align-items: center; }
+  }
+
+  /* ---------- Partner ---------- */
+  .dit-section--tight { padding-block: var(--space-4); }
+  .partner {
+    display: grid; gap: var(--space-3); justify-items: start; padding: var(--space-4);
+    border-radius: var(--radius-feature); background: var(--grad-brand-soft); color: var(--dit-violet-ink);
+  }
+  .partner h2 { font-size: var(--fs-subhead); color: var(--dit-violet-ink); margin-bottom: var(--space-1); }
+  :global(:root[data-theme="dark"]) .partner { background: var(--surface-blush); color: var(--dit-lilac); }
+  :global(:root[data-theme="dark"]) .partner h2 { color: var(--dit-lilac); }
+  .partner__how { margin-top: var(--space-1); font-size: var(--fs-small); }
+  .partner__how a { color: inherit; font-weight: var(--weight-bold); overflow-wrap: anywhere; }
+  .partner__ctas { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+  @media (min-width: 960px) { .partner { grid-template-columns: auto 1fr auto; align-items: center; padding: var(--space-4) var(--space-5); } }
+
+  /* ---------- Join ---------- */
+  .join { display: grid; gap: var(--space-3); padding: var(--space-5) var(--space-3) 0; overflow: hidden; text-align: center; }
+  .join__copy { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
+  .join__copy .dit-lead { max-width: 44ch; }
+  .join__cta { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); }
+  .join__note { font-size: var(--fs-small); }
+  .join :global(.join__dala) { width: min(60vw, 300px); justify-self: center; margin-bottom: -6px; }
+  @media (min-width: 960px) {
+    .join { grid-template-columns: 1.5fr 1fr; align-items: end; text-align: left; padding: var(--space-6) var(--space-6) 0; }
+    .join__copy { align-items: flex-start; padding-bottom: var(--space-6); }
+    .join__cta { align-items: flex-start; }
+    .join :global(.join__dala) { justify-self: end; }
+  }
+</style>

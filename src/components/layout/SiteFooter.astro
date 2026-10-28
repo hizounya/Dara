@@ -1,0 +1,58 @@
+---
+// Shared footer on the rounded brand gradient band (carousel cover footer).
+// Shows only confirmed details: the contact email appears once site.contactEmail is set.
+import Logo from '../brand/Logo.astro';
+import { site } from '../../data/site';
+const year = new Date().getFullYear();
+---
+<footer class="ftr">
+  <div class="dit-container ftr__grid">
+    <div class="ftr__brand">
+      <a href="/" aria-label="Dara in Tech home"><Logo height={44} /></a>
+      <p>{site.tagline}</p>
+    </div>
+    <nav class="ftr__col" aria-label="Footer">
+      <h2 class="ftr__h">Explore</h2>
+      <ul>{site.nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+    </nav>
+    <div class="ftr__col">
+      <h2 class="ftr__h">Members</h2>
+      <ul>
+        <li><a href={site.joinUrl}>Join our community<span class="dit-visually-hidden"> on {site.joinVia}</span></a></li>
+        <li><a href={site.signupUrl}>Sign up for the Member Hub</a></li>
+        <li><a href={site.hubUrl}>Member login</a></li>
+      </ul>
+    </div>
+    <div class="ftr__col">
+      <h2 class="ftr__h">Say hi</h2>
+      <ul>
+        <li><a href={site.instagram.url}>{site.instagram.handle}</a></li>
+        {site.contactEmail && <li><a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a></li>}
+      </ul>
+    </div>
+  </div>
+  <div class="dit-container">
+    <p class="ftr__base">© {year} Dara in Tech</p>
+  </div>
+</footer>
+
+<style>
+  .ftr {
+    padding-block: var(--space-6) var(--space-3);
+    border-radius: var(--radius-frame) var(--radius-frame) 0 0;
+    /* Same tint as the page's alternating sections, so the footer reads as the last band of the page.
+       The plate-free logo stays legible (the lilac→pink band hid its pink lettering). */
+    background: var(--surface-soft); color: var(--text-headline);
+  }
+  .ftr__grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ftr__brand { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); max-width: 36ch; }
+  .ftr__h { font: var(--weight-bold) var(--fs-small) / 1.3 var(--font-display); letter-spacing: .02em; color: inherit; margin-bottom: var(--space-1); }
+  .ftr ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .ftr a { display: inline-flex; align-items: center; min-height: 36px; color: inherit; text-decoration: none; font-weight: var(--weight-medium); }
+  .ftr a:hover { color: var(--link-hover); text-decoration: underline; }
+  .ftr__base { margin-top: var(--space-5); padding-top: var(--space-2); border-top: 1px solid color-mix(in srgb, currentColor 25%, transparent); font-size: var(--fs-small); }
+  @media (min-width: 960px) {
+    .ftr__grid { grid-template-columns: 2fr 1fr 1fr 1fr; }
+    .ftr__brand { grid-column: auto; }
+  }
+</style>

@@ -1,0 +1,23 @@
+---
+// DS Button for the web. Renders <a> when `href` is set, otherwise <button>.
+// "primary" is solid violet with white text (approved accessibility decision); the gradient stays decorative.
+// `arrow` adds the DS arrow orb, for the one main call to action in a view.
+import Icon from './Icon.astro';
+
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'outline' | 'plum' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  arrow?: boolean;
+  type?: 'button' | 'submit';
+  class?: string;
+  [attr: string]: unknown;
+}
+const { href, variant = 'primary', size = 'md', arrow = false, type = 'button', class: cls, ...rest } = Astro.props;
+const classes = ['dit-btn', variant !== 'primary' && `dit-btn--${variant}`, size !== 'md' && `dit-btn--${size}`, cls];
+const Tag = href ? 'a' : 'button';
+---
+<Tag class:list={classes} href={href} type={href ? undefined : type} {...rest}>
+  <slot />
+  {arrow && <span class="dit-btn__orb" aria-hidden="true"><Icon name="arrow-right" /></span>}
+</Tag>

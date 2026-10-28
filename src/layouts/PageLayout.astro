@@ -1,0 +1,18 @@
+---
+// Public page frame: skip link, shared header, main content, shared footer.
+import BaseLayout from './BaseLayout.astro';
+import SiteHeader from '../components/layout/SiteHeader.astro';
+import SiteFooter from '../components/layout/SiteFooter.astro';
+
+interface Props { title: string; description: string; noindex?: boolean; }
+const { title, description, noindex } = Astro.props;
+---
+<BaseLayout title={title} description={description} noindex={noindex}>
+  <slot name="head" slot="head" />
+  <a class="dit-skip" href="#main">Skip to content</a>
+  <SiteHeader />
+  <main id="main" tabindex="-1">
+    <slot />
+  </main>
+  <SiteFooter />
+</BaseLayout>

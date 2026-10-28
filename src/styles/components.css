@@ -1,0 +1,209 @@
+/* Component classes. This class API is the shared contract between Astro components and the Member Hub. */
+
+/* ---------- Sections (vertical rhythm: 64px mobile, 112px desktop) ---------- */
+.dit-section { position: relative; padding-block: var(--space-6); }
+@media (min-width: 960px) { .dit-section { padding-block: 96px; } }
+.dit-section--tint { background: var(--surface-soft); }
+.dit-section--tint-round { border-radius: var(--radius-frame); }
+.dit-section__head { display: flex; flex-direction: column; gap: var(--space-2); max-width: 720px; margin-bottom: var(--space-5); }
+.dit-section__head--center { margin-inline: auto; align-items: center; text-align: center; }
+
+/* ---------- Text ---------- */
+.dit-hero-title { font-size: var(--fs-hero); line-height: var(--lh-tight); font-weight: var(--weight-bold); }
+.dit-grad-text {
+  background: var(--grad-text); -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
+}
+.dit-lead { font-size: var(--fs-lead); color: var(--text-body); max-width: 60ch; }
+.dit-kicker { font-family: var(--font-display); font-weight: var(--weight-bold); font-size: var(--fs-lead); color: var(--text-headline); letter-spacing: -.01em; }
+.dit-muted { color: var(--text-muted); }
+
+/* ---------- Buttons ---------- */
+.dit-btn {
+  --btn-bg: var(--btn-primary-bg); --btn-fg: var(--btn-primary-fg);
+  display: inline-flex; align-items: center; justify-content: center; gap: .55em;
+  min-height: 48px; padding: 12px 26px;
+  border: 2px solid transparent; border-radius: var(--radius-pill);
+  background: var(--btn-bg); color: var(--btn-fg);
+  font: var(--weight-bold) var(--fs-body) / 1.1 var(--font-display); letter-spacing: -.01em;
+  text-decoration: none; white-space: nowrap;
+  transition: transform var(--dur-fast) var(--ease-soft), filter var(--dur-fast) var(--ease-soft), background-color var(--dur-fast) var(--ease-soft);
+}
+.dit-btn:hover { color: var(--btn-fg); filter: brightness(1.05); }
+.dit-btn:active { transform: scale(.97); }
+.dit-btn:disabled, .dit-btn[aria-disabled="true"] { opacity: .55; cursor: default; filter: none; transform: none; }
+.dit-btn .dit-icon { width: 1.05em; height: 1.05em; }
+.dit-btn--outline {
+  --btn-fg: var(--text-headline);
+  background: linear-gradient(var(--surface-card), var(--surface-card)) padding-box, var(--grad-brand) border-box;
+}
+.dit-btn--plum { --btn-bg: var(--btn-plum-bg); --btn-fg: var(--btn-plum-fg); }
+.dit-btn--ghost { --btn-bg: transparent; --btn-fg: var(--link); }
+.dit-btn--ghost:hover { --btn-bg: var(--surface-soft); filter: none; }
+.dit-btn--lg { min-height: 56px; padding: 15px 32px; font-size: var(--fs-lead); }
+.dit-btn--sm { min-height: 38px; padding: 7px 16px; font-size: var(--fs-small); }
+
+/* Arrow orb used on the main CTA (DS Button "cta" orb), drawn in the button's own colours. */
+.dit-btn__orb {
+  display: inline-grid; place-items: center; width: 1.75em; height: 1.75em; margin-right: -.6em;
+  border-radius: 50%; background: var(--btn-fg); color: var(--btn-bg);
+}
+
+/* ---------- Icons ---------- */
+.dit-icon { display: inline-block; width: 1em; height: 1em; flex: none; fill: currentColor; }
+.dit-orb {
+  display: inline-grid; place-items: center; flex: none;
+  width: var(--orb-size, 64px); height: var(--orb-size, 64px); border-radius: 50%;
+  background: var(--dit-icon-tint); color: var(--dit-violet-ink);
+}
+.dit-orb .dit-icon { width: 52%; height: 52%; }
+.dit-orb--gradient { background: var(--grad-icon-orb); color: var(--dit-white); }
+:root[data-theme="dark"] .dit-orb:not(.dit-orb--gradient) { background: var(--surface-soft); color: var(--dit-lilac); }
+
+/* ---------- Tags ---------- */
+.dit-tag {
+  display: inline-flex; align-items: center; gap: .4em; padding: 5px 14px;
+  border-radius: var(--radius-pill); background: var(--dit-lilac); color: var(--dit-violet-ink);
+  font: var(--weight-bold) var(--fs-label) / 1.2 var(--font-body); letter-spacing: .01em;
+}
+.dit-tag--blush { background: var(--dit-blush); color: #9C2F6B; }        /* DS Tag tone */
+.dit-tag--pink { background: var(--dit-pink); color: var(--dit-plum); } /* plum on pink 4.87:1; DS white fails */
+.dit-tag--plum { background: var(--dit-plum); color: var(--dit-white); }
+:root[data-theme="dark"] .dit-tag { background: var(--surface-soft); color: var(--dit-lilac); }
+:root[data-theme="dark"] .dit-tag--blush { background: var(--surface-blush); color: var(--dit-rose); }
+:root[data-theme="dark"] .dit-tag--pink { background: var(--dit-rose); color: var(--dit-plum); }
+:root[data-theme="dark"] .dit-tag--plum { background: var(--dit-lilac); color: var(--dit-plum); }
+
+/* ---------- Cards ---------- */
+.dit-card {
+  position: relative; padding: var(--space-4); border: 3px solid transparent; border-radius: var(--radius-feature);
+  background: linear-gradient(var(--surface-card), var(--surface-card)) padding-box, var(--grad-brand) border-box;
+  color: var(--text-body);
+}
+.dit-card--soft {
+  border-width: 1px;
+  background: linear-gradient(var(--surface-card), var(--surface-card)) padding-box, linear-gradient(var(--border-soft), var(--border-soft)) border-box;
+}
+.dit-card--float { box-shadow: var(--shadow-card); }
+.dit-card--frame {
+  border-width: 10px; border-radius: var(--radius-frame);
+  background: linear-gradient(var(--surface-card), var(--surface-card)) padding-box, var(--grad-frame) border-box;
+}
+
+/* Feature row (DS FeatureRow): icon orb, gradient pin divider, title and text. */
+.dit-feature {
+  display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-3);
+  border: 3px solid transparent; border-radius: var(--radius-feature);
+  background: linear-gradient(var(--surface-card), var(--surface-card)) padding-box, var(--grad-brand) border-box;
+}
+.dit-feature__pin { position: relative; align-self: stretch; width: 3px; margin-block: 6px; border-radius: 2px; background: linear-gradient(180deg, var(--dit-rose), var(--dit-violet)); }
+.dit-feature__pin::before, .dit-feature__pin::after { content: ""; position: absolute; left: -3.5px; width: 10px; height: 10px; border-radius: 50%; }
+.dit-feature__pin::before { top: -4px; background: var(--dit-rose); }
+.dit-feature__pin::after { bottom: -4px; background: var(--dit-violet); }
+.dit-feature__title { font: 600 var(--fs-subhead) / var(--lh-heading) var(--font-display); color: var(--text-headline); letter-spacing: -.02em; margin: 0; }
+.dit-feature__text { margin-top: 4px; color: var(--text-body); }
+@media (max-width: 639px) {
+  .dit-feature { gap: var(--space-2); padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2); --orb-size: 52px; }
+}
+
+/* Definition card (carousel slide 3). */
+.dit-definition { border-width: 4px; background: linear-gradient(var(--surface-card), var(--surface-card)) padding-box, var(--grad-brand-soft) border-box; }
+.dit-definition__word { font: var(--weight-bold) var(--fs-section) / 1 var(--font-display); color: var(--dit-violet); letter-spacing: var(--tracking-display); margin: 0; }
+.dit-definition__meta { margin-top: var(--space-1); font-style: italic; color: var(--text-muted); }
+.dit-definition__meaning { margin-top: var(--space-1); font-size: var(--fs-subhead); color: var(--text-body); }
+:root[data-theme="dark"] .dit-definition__word { color: var(--dit-periwinkle); }
+
+/* ---------- Forms ---------- */
+.dit-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.dit-label { font: var(--weight-bold) var(--fs-small) / 1.3 var(--font-body); color: var(--text-strong); }
+.dit-hint { font-size: var(--fs-label); color: var(--text-muted); }
+.dit-input {
+  width: 100%; min-height: 48px; padding: 10px 14px;
+  border: 1.5px solid var(--border-control); border-radius: var(--radius-control);
+  background: var(--surface-card); color: var(--text-body);
+  transition: border-color var(--dur-fast) var(--ease-soft), box-shadow var(--dur-fast) var(--ease-soft);
+}
+.dit-input::placeholder { color: var(--text-muted); opacity: .8; }
+.dit-input:hover { border-color: var(--link); }
+.dit-input:focus-visible { outline: none; border-color: var(--focus-ring); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-ring) 35%, transparent); }
+textarea.dit-input { min-height: 120px; resize: vertical; }
+.dit-input[aria-invalid="true"] { border-color: var(--status-error); }
+.dit-field__error { display: flex; gap: 6px; align-items: flex-start; font-size: var(--fs-small); font-weight: var(--weight-medium); color: var(--status-error); }
+.dit-check { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
+.dit-check input { width: 20px; height: 20px; margin: 2px 0 0; flex: none; accent-color: var(--dit-violet); }
+
+/* ---------- Status messages (always text + icon, never colour alone) ---------- */
+.dit-alert {
+  display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px;
+  border-radius: var(--radius-control); border: 1.5px solid currentColor;
+}
+.dit-alert .dit-icon { width: 20px; height: 20px; margin-top: 2px; }
+.dit-alert__title { display: block; font-weight: var(--weight-bold); }
+.dit-alert__body { color: var(--text-body); }
+.dit-alert--error { background: var(--status-error-soft); color: var(--status-error); }
+.dit-alert--success { background: var(--status-success-soft); color: var(--status-success); }
+.dit-alert--info { background: var(--surface-soft); color: var(--text-headline); }
+
+/* ---------- Theme toggle ---------- */
+.dit-theme-toggle {
+  display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0;
+  border: 1.5px solid var(--border-soft); border-radius: 50%;
+  background: var(--surface-card); color: var(--text-headline);
+  transition: background-color var(--dur-fast) var(--ease-soft);
+}
+.dit-theme-toggle:hover { background: var(--surface-soft); }
+.dit-theme-toggle .dit-icon { width: 20px; height: 20px; }
+[data-theme-toggle] .i-sun, :root[data-theme="dark"] [data-theme-toggle] .i-moon { display: none; }
+:root[data-theme="dark"] [data-theme-toggle] .i-sun { display: block; }
+
+/* ---------- Site header (shared by SiteHeader.astro and the Member Hub) ----------
+   Collapses into the Menu button below 1120px: with four links and three actions, narrower bars wrap. */
+.dit-hdr { position: sticky; top: 0; z-index: 50; background: var(--page-bg); border-bottom: 1px solid var(--border-soft); }
+.dit-hdr__bar { display: flex; align-items: center; gap: var(--space-2); min-height: var(--header-h); }
+.dit-hdr__logo { display: inline-flex; flex-shrink: 0; margin-right: auto; border-radius: 12px; }
+.dit-hdr__actions { display: flex; align-items: center; gap: var(--space-1); }
+
+.dit-hdr__menu-btn {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px;
+  border: 1.5px solid var(--border-soft); border-radius: var(--radius-pill);
+  background: var(--surface-card); color: var(--text-headline); font: var(--weight-bold) var(--fs-small) / 1 var(--font-display);
+}
+.dit-hdr__menu-btn .dit-icon { width: 20px; height: 20px; }
+
+.dit-hdr__links { list-style: none; margin: 0; padding: 0; }
+.dit-hdr__links a { white-space: nowrap;
+  display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: var(--radius-control);
+  color: var(--text-headline); font: var(--weight-medium) var(--fs-body) / 1.2 var(--font-body); text-decoration: none;
+}
+.dit-hdr__links a:hover { color: var(--link-hover); background: var(--surface-soft); }
+
+/* Mobile: full-width panel under the bar. */
+@media (max-width: 1119px) {
+  .dit-hdr__menu {
+    position: absolute; inset: 100% 0 auto; padding: var(--space-2) var(--gutter) var(--space-3);
+    background: var(--page-bg); border-bottom: 1px solid var(--border-soft); box-shadow: var(--shadow-soft);
+    display: flex; flex-direction: column; gap: var(--space-2);
+    max-height: calc(100svh - var(--header-h)); overflow-y: auto;
+  }
+  .js .dit-hdr__menu:not([data-open="true"]) { display: none; }
+  .dit-hdr__links a { min-height: 52px; font-size: var(--fs-lead); }
+  .dit-hdr__ctas { display: grid; gap: var(--space-1); }
+  .dit-hdr__ctas .dit-btn { width: 100%; min-height: 48px; }
+  body.dit-menu-open { overflow: hidden; }
+}
+
+/* Desktop: links inline between the logo and the actions. */
+@media (min-width: 1120px) {
+  .dit-hdr__bar { gap: var(--space-3); }
+  .dit-hdr__logo { margin-right: 0; }
+  .dit-hdr__menu { display: contents; }
+  .dit-hdr__links { display: flex; gap: 2px; margin-inline: auto; }
+  .dit-hdr__ctas { display: flex; align-items: center; gap: var(--space-1); order: 3; }
+  .dit-hdr__actions { order: 4; } /* theme toggle sits at the far right, after the actions */
+  .dit-hdr__menu-btn { display: none; }
+}
+
+/* ---------- Decor ---------- */
+.dit-decor { position: absolute; pointer-events: none; user-select: none; opacity: var(--decor-opacity); }
+.dit-mascot { height: auto; }

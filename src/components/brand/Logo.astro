@@ -1,0 +1,16 @@
+---
+// Official Dara in Tech logo, used exactly as supplied (no recolouring or redrawing).
+// Transparent PNG, shown without any plate or background (team decision, 28 Oct 2026).
+import { Image } from 'astro:assets';
+import logo from '../../assets/brand/dara-in-tech-logo.png';
+
+interface Props { height?: number; alt?: string; }
+const { height = 44, alt = 'Dara in Tech' } = Astro.props;
+---
+<span class="dit-logo">
+  <Image src={logo} alt={alt} height={height} densities={[1, 2]} format="webp" loading="eager" />
+</span>
+<style>
+  .dit-logo { display: inline-flex; border-radius: 12px; }
+  .dit-logo :global(img) { width: auto; }
+</style>

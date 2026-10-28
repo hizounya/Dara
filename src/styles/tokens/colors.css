@@ -1,0 +1,46 @@
+:root{
+/* Official palette */
+--dit-lavender:#AEAFF2;
+--dit-plum:#331C33;
+--dit-lilac:#E9E5FA;
+--dit-blush:#F7DEEB;
+--dit-pink:#DE67A6;
+--dit-ivory:#FAF8F5;
+--dit-white:#FFFFFF;
+/* Sampled from the reference carousel */
+--dit-violet-ink:#40298B;   /* headline + body ink used across slides 2–5 */
+--dit-violet:#6A4CD5;       /* gradient start, pin dot, card-border start */
+--dit-orchid:#B582E4;       /* gradient midpoint */
+--dit-rose:#F2A4D2;         /* gradient end, pin dot, card-border end */
+--dit-periwinkle:#B9AFFA;   /* frame gradient start (slide 5) */
+--dit-icon-tint:#F5E8FF;    /* icon circle fill (slide 4) */
+--dit-circuit-lilac:#C3B2DE;/* lavender circuit traces */
+--dit-circuit-pink:#F2C7DC; /* pink circuit traces */
+--dit-mascot-skin:#B9AFF7;
+--dit-mascot-belly:#E5DBFD;
+--dit-laptop:#45243F;
+
+/* Gradients */
+--grad-brand:linear-gradient(90deg,#6A4CD5 0%,#B582E4 55%,#F2A4D2 100%); /* @kind color */
+--grad-brand-soft:linear-gradient(90deg,#D4C8F6 0%,#F4C3E2 100%); /* @kind color */
+--grad-cta:linear-gradient(90deg,#AD81E6 0%,#C6A6F0 50%,#F2A4D2 100%); /* @kind color */
+--grad-frame:linear-gradient(135deg,#B9AFFA 0%,#E9A0D0 100%); /* @kind color */
+--grad-blob:linear-gradient(160deg,#D9C2F4 0%,#F3C6EC 100%); /* @kind color */
+--grad-footer-band:linear-gradient(90deg,#C1B2E5 0%,#F2BFDA 100%); /* @kind color */
+--grad-icon-orb:linear-gradient(135deg,#D1C5F3 0%,#F6BEE3 100%); /* @kind color */
+
+/* Semantic */
+--bg-page:var(--dit-white);
+--bg-warm:var(--dit-ivory);
+--surface-card:var(--dit-white);
+--surface-soft:var(--dit-lilac);
+--surface-blush:var(--dit-blush);
+--text-headline:var(--dit-violet-ink);
+--text-body:var(--dit-violet-ink);
+--text-strong:var(--dit-plum);
+--text-on-brand:var(--dit-white);
+--text-muted:#6E5A9E;
+--accent:var(--dit-pink);
+--brand:var(--dit-lavender);
+--border-soft:#E3DBF7;
+}

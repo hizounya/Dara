@@ -1,0 +1,10 @@
+---
+// Dictionary-style card from carousel slide 3 ("da • ra / noun • indonesian / A young woman.").
+interface Props { word: string; meta: string; meaning: string; }
+const { word, meta, meaning } = Astro.props;
+---
+<div class="dit-card dit-definition">
+  <p class="dit-definition__word" lang="id">{word}</p>
+  <p class="dit-definition__meta">{meta}</p>
+  <p class="dit-definition__meaning">{meaning}</p>
+</div>

@@ -1,0 +1,28 @@
+---
+// Theme bootstrap, inlined in <head> so the page never flashes the wrong theme.
+// Light is the default regardless of the OS setting; dark is only used when the visitor picked it.
+// Shared by the public site and the Member Hub: any element with [data-theme-toggle] toggles the theme,
+// including buttons the Hub renders later (event delegation).
+---
+<script is:inline>
+  (function () {
+    var KEY = 'dit-theme', root = document.documentElement;
+    root.classList.add('js'); // lets CSS hide JS-only UI (e.g. the closed mobile menu) only when JS runs
+    function stored() { try { return localStorage.getItem(KEY) === 'dark' ? 'dark' : 'light'; } catch (e) { return 'light'; } }
+    function apply(theme) {
+      root.setAttribute('data-theme', theme);
+      var buttons = document.querySelectorAll('[data-theme-toggle]');
+      for (var i = 0; i < buttons.length; i++) buttons[i].setAttribute('aria-pressed', String(theme === 'dark'));
+    }
+    window.ditTheme = {
+      get: function () { return root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; },
+      set: function (theme) { apply(theme); try { localStorage.setItem(KEY, theme); } catch (e) {} },
+      toggle: function () { this.set(this.get() === 'dark' ? 'light' : 'dark'); }
+    };
+    apply(stored());
+    document.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('[data-theme-toggle]')) window.ditTheme.toggle();
+    });
+    document.addEventListener('DOMContentLoaded', function () { apply(window.ditTheme.get()); });
+  })();
+</script>
